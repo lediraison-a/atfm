@@ -1,0 +1,155 @@
+package app
+
+import (
+	"atfm/app/models"
+	"atfm/app/sort"
+	"atfm/generics"
+	"errors"
+	"net/rpc"
+	"path"
+	"strings"
+)
+
+type Instance struct {
+	rpcClient *rpc.Client
+
+	Id int
+
+	History *models.NavHistory
+
+	BasePath string
+	Mod      models.FsMod
+
+	DirPath string
+	DirInfo models.FileInfo
+
+	Content      []models.FileInfo
+	ShownContent []models.FileInfo
+
+	SelectedIndexes []int
+
+	ShowHidden, ShowOpenParent bool
+
+	CurrentItem int
+}
+
+func NewInstance(mod models.FsMod, path, basePath string, id int) *Instance {
+	return &Instance{
+		Id:              id,
+		History:         models.NewNavHistory(),
+		Mod:             mod,
+		DirInfo:         models.FileInfo{},
+		Content:         []models.FileInfo{},
+		ShownContent:    []models.FileInfo{},
+		SelectedIndexes: []int{},
+		DirPath:         path,
+		ShowHidden:      false,
+		CurrentItem:     0,
+		BasePath:        basePath,
+	}
+}
+
+func (s *Instance) FileCount() int {
+	return len(s.ShownContent)
+}
+
+func (s *Instance) OpenAtIndex(index int) error {
+	if index < 0 || index > len(s.ShownContent)-1 {
+		return errors.New("index out of range")
+	}
+	p := path.Join(s.DirPath, s.ShownContent[index].Name)
+	return s.OpenDirSaveHistory(p, s.BasePath, s.Mod)
+}
+
+func (s *Instance) OpenDirSaveHistory(path, basepath string, mod models.FsMod) error {
+	h := s.GetHistoryRecCurrent()
+	err := s.OpenDir(path, basepath, mod)
+	if err == nil {
+		s.History.GetHistoryStack(models.HISTORY_BACK).Push(&h)
+	}
+	return err
+}
+
+func (s *Instance) OpenDir(path, basepath string, mod models.FsMod) error {
+	arg := models.FileArg{
+		Mod:      mod,
+		BasePath: basepath,
+		Path:     path,
+	}
+	var dc []models.FileInfo
+	err := s.rpcClient.Call("FileManager.ReadDir", arg, &dc)
+	if err != nil {
+		return err
+	}
+	var di models.FileInfo
+	err = s.rpcClient.Call("FileManager.StatDir", arg, &di)
+	if err != nil {
+		return err
+	}
+	sdc := sort.SortDirContent(dc, sort.NewSortPref())
+	if !s.ShowHidden {
+		sdc = generics.Filter(sdc, func(v models.FileInfo, index int) bool {
+			return !strings.HasPrefix(v.Name, ".")
+		})
+	}
+	s.DirPath = path
+	s.Content = dc
+	s.ShownContent = sdc
+	s.DirInfo = di
+	s.CurrentItem = 0
+	return nil
+}
+
+func (s *Instance) ReadDir(path, basepath string, mod models.FsMod) ([]models.FileInfo, error) {
+	arg := models.FileArg{
+		Mod:      mod,
+		BasePath: basepath,
+		Path:     path,
+	}
+	var dc []models.FileInfo
+	err := s.rpcClient.Call("FileManager.ReadDir", arg, &dc)
+	if err != nil {
+		return nil, err
+	}
+	sdc := sort.SortDirContent(dc, sort.NewSortPref())
+	if !s.ShowHidden {
+		sdc = generics.Filter(sdc, func(v models.FileInfo, index int) bool {
+			return !strings.HasPrefix(v.Name, ".")
+		})
+	}
+	return sdc, nil
+}
+
+func (s *Instance) OpenHistoryDir(mod models.NavHistoryMod) (bool, error) {
+	hStack := s.History.GetHistoryStack(mod)
+	if hStack.Count > 0 {
+		h := hStack.Pop()
+		err := s.OpenDir(h.Path, h.BasePath, h.Mod)
+		if err == nil {
+			s.CurrentItem = h.Index
+			s.History.GetHistoryStack(!mod).Push(h)
+			return true, nil
+		} else {
+			return false, err
+		}
+	} else {
+		return false, nil
+	}
+}
+
+func (s *Instance) IsSelected(index int) bool {
+	return generics.Contains(s.SelectedIndexes, index)
+}
+
+func (s *Instance) CanShowOpenParent() bool {
+	return s.ShowOpenParent && (s.DirPath != "/" || s.Mod == models.ARCHIVEFM)
+}
+
+func (s *Instance) GetHistoryRecCurrent() models.NavHistoryRec {
+	return models.NavHistoryRec{
+		Path:     s.BasePath,
+		Index:    s.CurrentItem,
+		Mod:      s.Mod,
+		BasePath: s.BasePath,
+	}
+}
