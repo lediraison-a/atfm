@@ -53,8 +53,14 @@ func (m *Pathline) Draw(screen tcell.Screen) {
 		m.InputField.Draw(screen)
 	} else {
 		_, t := m.getPathlineTexts()
-		td := path.Dir(t) + "/"
+		td := path.Dir(t)
+		if td != "/" {
+			td += "/"
+		}
 		ta := path.Base(t)
+		if td == ta && td == "/" {
+			td = ""
+		}
 
 		dirStyle := NewStyle().
 			Background(m.displayConfig.Theme.Background_default).

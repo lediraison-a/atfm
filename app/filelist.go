@@ -17,7 +17,7 @@ type Filelist struct {
 	pane            UiPane
 	GetInstancePane func(UiPane) *Instance
 
-	offset int
+	listOffset int
 
 	displayConfig config.DisplayConfig
 
@@ -32,7 +32,7 @@ func NewFileList(pane UiPane, getInstancePane func(UiPane) *Instance, inputHandl
 		inputHandler:    inputHandler,
 		pane:            pane,
 		GetInstancePane: getInstancePane,
-		offset:          0,
+		listOffset:      0,
 		displayConfig:   displayConfig,
 		isDragSelect:    false,
 		lastDragSelect:  0,
@@ -45,13 +45,13 @@ func (m *Filelist) Draw(screen tcell.Screen) {
 	ins := m.GetInstancePane(m.pane)
 	current := ins.CurrentItem
 
-	if current < m.offset {
-		m.offset = current
-	} else if ins.CurrentItem >= m.offset+(height-1) {
-		m.offset = (current - height) + 1
+	if current < m.listOffset {
+		m.listOffset = current
+	} else if ins.CurrentItem >= m.listOffset+(height-1) {
+		m.listOffset = (current - height) + 1
 	}
-	if m.offset < 0 {
-		m.offset = 0
+	if m.listOffset < 0 {
+		m.listOffset = 0
 	}
 	itemCount := len(ins.ShownContent)
 
@@ -95,7 +95,7 @@ func (m *Filelist) Draw(screen tcell.Screen) {
 
 	for i := y; i <= height+1; i++ {
 		li := i - y
-		cIndex := m.offset + li
+		cIndex := m.listOffset + li
 		if cIndex >= itemCount {
 			tview.Print(screen, "", x, i, width, tview.AlignLeft, tcell.ColorDefault)
 			continue
@@ -103,7 +103,6 @@ func (m *Filelist) Draw(screen tcell.Screen) {
 		fi := ins.ShownContent[cIndex]
 		tview.Print(screen, printInfoText(fi, cIndex), x, i, width, tview.AlignRight, tcell.ColorDefault)
 		tview.Print(screen, printMainText(fi, cIndex), x, i, width, tview.AlignLeft, tcell.ColorDefault)
-
 	}
 }
 
@@ -115,19 +114,23 @@ func (m *Filelist) InputHandler() func(event *tcell.EventKey, setFocus func(p tv
 
 func (m *Filelist) MouseHandler() func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (bool, tview.Primitive) {
 	return m.WrapMouseHandler(func(action tview.MouseAction, event *tcell.EventMouse, _ func(p tview.Primitive)) (bool, tview.Primitive) {
-		if !m.InRect(event.Position()) {
+		x, y := event.Position()
+		if !m.InRect(x, y) {
+			m.isDragSelect = false
 			return false, nil
 		}
-		return m.inputHandler.listenInputMouse(event, action, "filelist"), m.Box
+		redraw := m.HandleDragSelection(action, x, y) ||
+            m.inputHandler.listenInputMouse(event, action, "filelist")
+		return redraw, m.Box
 	})
 }
 
 func (m *Filelist) ScrollUp() {
-	m.moveCurrentItem(true)
+	m.MoveCurrentItem(true)
 }
 
 func (m *Filelist) ScrollDown() {
-	m.moveCurrentItem(false)
+	m.MoveCurrentItem(false)
 }
 
 func (m *Filelist) ScrollFirst() {
@@ -140,7 +143,7 @@ func (m *Filelist) ScrollLast() {
 	ins.CurrentItem = len(ins.ShownContent) - 1
 }
 
-func (m *Filelist) moveCurrentItem(up bool) {
+func (m *Filelist) MoveCurrentItem(up bool) {
 	ins := m.GetInstancePane(m.pane)
 	current := ins.CurrentItem
 	if up {
@@ -157,13 +160,52 @@ func (m *Filelist) moveCurrentItem(up bool) {
 	ins.CurrentItem = current
 }
 
-func (m *Filelist) getUnderMouseIndex(mousePosY int) int {
+func (m *Filelist) GetUnderMouseIndex(mousePosY int) int {
 	ins := m.GetInstancePane(m.pane)
-	a := m.offset
+	a := m.listOffset
 	pos := 2
 	ii := mousePosY - pos + a
 	if ii >= ins.FileCount() {
 		ii = ins.FileCount() - 1
 	}
 	return ii
+}
+
+func (m *Filelist) HandleDragSelection(action tview.MouseAction, posX, posY int) bool {
+	ins := m.GetInstancePane(m.pane)
+	underMouseIndex := m.GetUnderMouseIndex(posY)
+	switch action {
+
+	case tview.MouseLeftDown:
+		ins.UnselectAll()
+		m.isDragSelect = true
+		m.lastDragSelect = underMouseIndex
+		return false
+
+	case tview.MouseLeftUp:
+		m.isDragSelect = false
+		return false
+
+	case tview.MouseMove:
+		if !m.isDragSelect {
+			break
+		}
+		if underMouseIndex > m.lastDragSelect {
+			for i := m.lastDragSelect; i < underMouseIndex; i++ {
+				ins.SelectItem(i, true)
+			}
+		} else if underMouseIndex < m.lastDragSelect {
+			for i := m.lastDragSelect; i > underMouseIndex; i-- {
+				ins.SelectItem(i, true)
+			}
+		} else {
+			m.isDragSelect = false
+			return false
+		}
+		ins.CurrentItem = underMouseIndex
+		m.isDragSelect = true
+		m.lastDragSelect = underMouseIndex
+		return true
+	}
+	return false
 }

@@ -149,6 +149,48 @@ func (t *Tui) GetAppCommands() []*cobra.Command {
 			}
 		},
 	}
+	openparent := &cobra.Command{
+		Use:  "openparent",
+		Args: cobra.ExactArgs(0),
+		Run: func(_ *cobra.Command, _ []string) {
+			ins := t.getInstancePane(t.selectedPane)
+			pd, pbp, pm := ins.GetParentInfo()
+			if err := ins.OpenDirSaveHistory(pd, pbp, pm); err != nil {
+
+			}
+		},
+	}
+	openprevious := &cobra.Command{
+		Use:  "openprevious",
+		Args: cobra.ExactArgs(0),
+		Run: func(_ *cobra.Command, _ []string) {
+			ins := t.getInstancePane(t.selectedPane)
+			ok, err := ins.OpenHistoryDir(models.HISTORY_BACK)
+			if ok && err != nil {
+
+			}
+		},
+	}
+	opennext := &cobra.Command{
+		Use:  "opennext",
+		Args: cobra.ExactArgs(0),
+		Run: func(_ *cobra.Command, _ []string) {
+			ins := t.getInstancePane(t.selectedPane)
+			ok, err := ins.OpenHistoryDir(models.HISTORY_FORWARD)
+			if ok && err != nil {
+
+			}
+		},
+	}
+	unselectall := &cobra.Command{
+		Use:  "unselectall",
+		Args: cobra.ExactArgs(0),
+		Run: func(_ *cobra.Command, _ []string) {
+			ins := t.getInstancePane(t.selectedPane)
+			ins.UnselectAll()
+		},
+	}
+
 	return []*cobra.Command{
 		quit,
 		quitall,
@@ -165,5 +207,9 @@ func (t *Tui) GetAppCommands() []*cobra.Command {
 		scrolllast,
 		editpath,
 		opencurrent,
+		openparent,
+		openprevious,
+		opennext,
+		unselectall,
 	}
 }

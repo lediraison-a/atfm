@@ -13,9 +13,12 @@ func GetFileIcon(name string, colorDefault string) (string, string) {
 	if ok {
 		return fnicon, colorDefault
 	}
-	fticon, ok := FileTypeIcons[filepath.Ext(name)]
-	if ok {
-		return fticon.icon, fticon.color
+	ext := filepath.Ext(name)
+	if len(ext) > 1 {
+		fticon, ok := FileTypeIcons[ext[1:]]
+		if ok {
+			return fticon.icon, fticon.color
+		}
 	}
 	return FileIcon, colorDefault
 }

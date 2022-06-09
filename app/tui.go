@@ -132,7 +132,7 @@ func (t *Tui) getInstancePane(view UiPane) *Instance {
 }
 
 func (t *Tui) ToggleDoublePane() {
-	t.grid.Clear()
+	// t.grid.Clear()
 	if t.showDoublePane {
 		t.tablines[LEFT].AddTabs(t.tablines[RIGHT].Tabs)
 		t.tablines[RIGHT].clearTabs()
@@ -160,10 +160,12 @@ func (t *Tui) setAppGridDoublePane() {
 func (t *Tui) setAppGridSinglePane() {
 	t.grid.SetRows(1, 1, 0)
 	t.grid.SetColumns(0)
-
-	t.grid.AddItem(t.pathlines[LEFT], 1, 0, 1, 3, 1, 1, false)
-	t.grid.AddItem(t.tablines[LEFT], 0, 0, 1, 3, 1, 1, false)
 	t.grid.AddItem(t.filelists[LEFT], 2, 0, 1, 1, 1, 1, true)
+	t.grid.AddItem(t.tablines[LEFT], 0, 0, 1, 1, 1, 1, false)
+	t.grid.AddItem(t.pathlines[LEFT], 1, 0, 1, 1, 1, 1, false)
+	// This next line is added to fix a very wierd bug :
+	// Last element added to the grid don't receive click event, so I added a useless item
+	t.grid.AddItem(tview.NewBox(), 0, 0, 0, 0, 1, 1, false)
 }
 
 func SetAppColors(t config.ThemeConfig) {

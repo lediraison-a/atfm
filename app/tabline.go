@@ -175,7 +175,8 @@ func (m *Tabline) GetSelectedTab() int {
 	return m.Tabs[m.SelectedTab]
 }
 
-func (m *Tabline) GetUnderMouseTabIndex(mousePosX, tablinePosX, tablineWidth int) int {
+func (m *Tabline) GetUnderMouseTabIndex(mousePosX int) int {
+	tablinePosX, _, tablineWidth, _ := m.GetInnerRect()
 	tablen := m.getTabSizeCompute()
 	nbTabWidth := tablineWidth / tablen
 	xx := mousePosX - tablinePosX

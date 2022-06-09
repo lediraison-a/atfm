@@ -147,9 +147,45 @@ func (s *Instance) CanShowOpenParent() bool {
 
 func (s *Instance) GetHistoryRecCurrent() models.NavHistoryRec {
 	return models.NavHistoryRec{
-		Path:     s.BasePath,
+		Path:     s.DirPath,
 		Index:    s.CurrentItem,
 		Mod:      s.Mod,
 		BasePath: s.BasePath,
 	}
+}
+
+func (s *Instance) GetParentInfo() (string, string, models.FsMod) {
+	pth := s.DirPath
+	bp := s.BasePath
+	mod := s.Mod
+	if pth == "/" && mod == models.ARCHIVEFM {
+
+	} else {
+		pth = path.Dir(s.DirPath)
+	}
+	return pth, bp, mod
+}
+
+func (s *Instance) SelectItem(index int, toggle bool) (int, bool) {
+	if index < 0 {
+		return 0, false
+	}
+	if index == 0 && s.CanShowOpenParent() {
+		return 0, false
+	}
+	for i, v := range s.SelectedIndexes {
+		if v == index {
+			if toggle {
+				s.SelectedIndexes = append(s.SelectedIndexes[:i], s.SelectedIndexes[i+1:]...)
+				return v, false
+			}
+			return v, true
+		}
+	}
+	s.SelectedIndexes = append(s.SelectedIndexes, index)
+	return index, true
+}
+
+func (s *Instance) UnselectAll() {
+	s.SelectedIndexes = []int{}
 }
