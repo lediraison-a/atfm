@@ -190,6 +190,15 @@ func (t *Tui) GetAppCommands() []*cobra.Command {
 			ins.UnselectAll()
 		},
 	}
+	togglehiddenfiles := &cobra.Command{
+		Use:  "togglehiddenfiles",
+		Args: cobra.ExactArgs(0),
+		Run: func(_ *cobra.Command, _ []string) {
+			ins := t.getInstancePane(t.selectedPane)
+			ins.ShowHidden = !ins.ShowHidden
+			ins.ShownContent = ins.GetShownContent(ins.Content)
+		},
+	}
 
 	return []*cobra.Command{
 		quit,
@@ -211,5 +220,6 @@ func (t *Tui) GetAppCommands() []*cobra.Command {
 		openprevious,
 		opennext,
 		unselectall,
+        togglehiddenfiles,
 	}
 }

@@ -82,19 +82,13 @@ func (s *Instance) OpenDir(path, basepath string, mod models.FsMod) error {
 		return err
 	}
 	var di models.FileInfo
-	err = s.rpcClient.Call("FileManager.StatDir", arg, &di)
+	err = s.rpcClient.Call("FileManager.StatFile", arg, &di)
 	if err != nil {
 		return err
 	}
-	sdc := sort.SortDirContent(dc, sort.NewSortPref())
-	if !s.ShowHidden {
-		sdc = generics.Filter(sdc, func(v models.FileInfo, index int) bool {
-			return !strings.HasPrefix(v.Name, ".")
-		})
-	}
 	s.DirPath = path
 	s.Content = dc
-	s.ShownContent = sdc
+	s.ShownContent = s.GetShownContent(dc)
 	s.DirInfo = di
 	s.CurrentItem = 0
 	return nil
@@ -111,13 +105,7 @@ func (s *Instance) ReadDir(path, basepath string, mod models.FsMod) ([]models.Fi
 	if err != nil {
 		return nil, err
 	}
-	sdc := sort.SortDirContent(dc, sort.NewSortPref())
-	if !s.ShowHidden {
-		sdc = generics.Filter(sdc, func(v models.FileInfo, index int) bool {
-			return !strings.HasPrefix(v.Name, ".")
-		})
-	}
-	return sdc, nil
+	return s.GetShownContent(dc), nil
 }
 
 func (s *Instance) OpenHistoryDir(mod models.NavHistoryMod) (bool, error) {
@@ -188,4 +176,14 @@ func (s *Instance) SelectItem(index int, toggle bool) (int, bool) {
 
 func (s *Instance) UnselectAll() {
 	s.SelectedIndexes = []int{}
+}
+
+func (s *Instance) GetShownContent(content []models.FileInfo) []models.FileInfo {
+	sdc := sort.SortDirContent(content, sort.NewSortPref())
+	if !s.ShowHidden {
+		sdc = generics.Filter(sdc, func(v models.FileInfo, index int) bool {
+			return !strings.HasPrefix(v.Name, ".")
+		})
+	}
+	return sdc
 }

@@ -73,7 +73,7 @@ func (f *FileManager) ReadDir(arg models.FileArg, dirContent *[]models.FileInfo)
 	return nil
 }
 
-func (f *FileManager) StatDir(arg models.FileArg, dirInfo *models.FileInfo) error {
+func (f *FileManager) StatFile(arg models.FileArg, fileInfo *models.FileInfo) error {
 	dfs, err := f.getFs(arg.BasePath, arg.Mod)
 	if err != nil {
 		return err
@@ -82,7 +82,7 @@ func (f *FileManager) StatDir(arg models.FileArg, dirInfo *models.FileInfo) erro
 	if err != nil {
 		return err
 	}
-	*dirInfo = models.FileInfo{
+	*fileInfo = models.FileInfo{
 		Name:    di.Name(),
 		IsDir:   di.IsDir(),
 		Mode:    di.Mode(),
@@ -90,4 +90,81 @@ func (f *FileManager) StatDir(arg models.FileArg, dirInfo *models.FileInfo) erro
 		ModTime: di.ModTime(),
 	}
 	return nil
+}
+
+func (f *FileManager) RenameFile(arg models.FileRenameArg, fileInfo *models.FileInfo) error {
+	fs, err := f.getFs(arg.BasePath, arg.Mod)
+	if err != nil {
+		return err
+	}
+    err = fs.Rename(arg.Path, arg.NewName)
+    if err != nil {
+        return err
+    }
+    var fi models.FileInfo
+    err = f.StatFile(models.FileArg{
+    	Mod:      arg.Mod,
+    	BasePath: arg.BasePath,
+    	Path:     arg.Path,
+    }, &fi)
+    if err != nil {
+        return err
+    }
+    *fileInfo = fi
+	return nil
+}
+
+func (f *FileManager) Exist(arg models.FileArg, exist *bool) error {
+	fs, err := f.getFs(arg.BasePath, arg.Mod)
+	if err != nil {
+		return err
+	}
+    b, err := afero.Exists(fs, arg.Path)
+    if err != nil {
+        return err
+    }
+    *exist = b
+    return nil
+}
+
+func (f *FileManager) CreateFile(arg models.FileArg, fileInfo *models.FileInfo) error {
+	fs, err := f.getFs(arg.BasePath, arg.Mod)
+	if err != nil {
+		return err
+	}
+    fi, err := fs.Create(arg.Path)
+    if err != nil {
+        return err
+    }
+    fii, err := fi.Stat()
+    if err != nil {
+        return err
+    }
+	*fileInfo = models.FileInfo{
+		Name:    fii.Name(),
+		IsDir:   fii.IsDir(),
+		Mode:    fii.Mode(),
+		Size:    fii.Size(),
+		ModTime: fii.ModTime(),
+	}
+    return nil
+}
+
+func (f *FileManager) ReadFile(arg models.FileArg, content*[]byte) error {
+    fs, err := f.getFs(arg.BasePath, arg.Mod)
+	if err != nil {
+		return err
+	}
+    fc , err := afero.ReadFile(fs, arg.Path)
+    if err != nil {
+        return err
+    }
+    *content = fc
+    return nil
+}
+
+func (f *FileManager) WriteReader() error {
+
+
+    return nil
 }
