@@ -23,6 +23,8 @@ type Tui struct {
 
 	inputHandler *InputHandler
 
+	cmdManager *CommandManager
+
 	app    *tview.Application
 	grid   *tview.Grid
 	layers *tview.Pages
@@ -31,6 +33,10 @@ type Tui struct {
 	filelists []*Filelist
 	tablines  []*Tabline
 	pathlines []*Pathline
+
+	pager *Pager
+
+	commandLine *CommandLine
 
 	showDoublePane bool
 
@@ -48,10 +54,15 @@ func NewTui(instances *InstancePool, appConfig *config.Config) *Tui {
 	}
 	app := tview.NewApplication().SetScreen(s)
 	appGrid := tview.NewGrid()
+
+	commandManager := NewCommandManager()
+	inputHandler := NewInputHandler(appConfig.KeyBindings, appConfig.MouseBindings)
+
 	tui := Tui{
 		instances:      instances,
 		appConfig:      appConfig,
-		inputHandler:   NewInputHandler(appConfig.KeyBindings, appConfig.MouseBindings),
+		inputHandler:   inputHandler,
+		cmdManager:     commandManager,
 		app:            app,
 		grid:           appGrid,
 		layers:         tview.NewPages(),
@@ -59,6 +70,8 @@ func NewTui(instances *InstancePool, appConfig *config.Config) *Tui {
 		filelists:      []*Filelist{},
 		tablines:       []*Tabline{},
 		pathlines:      []*Pathline{},
+		pager:          NewPager(inputHandler),
+		commandLine:    NewCommandLine(commandManager, inputHandler, appConfig.Display),
 		showDoublePane: false,
 		selectedPane:   LEFT,
 	}
@@ -97,7 +110,10 @@ func NewTui(instances *InstancePool, appConfig *config.Config) *Tui {
 	tui.setAppGridSinglePane()
 	tui.layers.AddPage("main", tui.grid, true, true)
 
+	tui.layers.AddPage("pager", tui.pager, false, false)
+
 	commands := tui.GetAppCommands()
+	commandManager.RootCmd.AddCommand(commands...)
 	tui.inputHandler.RegisterKeyActions(tui.GetActionsKey(commands)...)
 	tui.inputHandler.RegisterMouseActions(tui.GetActionsMouse(commands)...)
 
@@ -147,7 +163,7 @@ func (t *Tui) ToggleDoublePane() {
 }
 
 func (t *Tui) setAppGridDoublePane() {
-	t.grid.SetRows(1, 1, 0)
+	t.grid.SetRows(1, 1, 0, 1)
 	t.grid.SetColumns(0, 1, 0)
 
 	t.grid.AddItem(t.pathlines[LEFT], 1, 0, 1, 1, 1, 1, false)
@@ -160,11 +176,12 @@ func (t *Tui) setAppGridDoublePane() {
 }
 
 func (t *Tui) setAppGridSinglePane() {
-	t.grid.SetRows(1, 1, 0)
+	t.grid.SetRows(1, 1, 0, 1)
 	t.grid.SetColumns(0)
 	t.grid.AddItem(t.filelists[LEFT], 2, 0, 1, 1, 1, 1, true)
 	t.grid.AddItem(t.tablines[LEFT], 0, 0, 1, 1, 1, 1, false)
 	t.grid.AddItem(t.pathlines[LEFT], 1, 0, 1, 1, 1, 1, false)
+	t.grid.AddItem(t.commandLine, 3, 0, 1, 1, 1, 1, false)
 	// This next line is added to fix a very wierd bug :
 	// Last element added to the grid don't receive click event, so I added a useless item
 	t.grid.AddItem(tview.NewBox(), 0, 0, 0, 0, 1, 1, false)
