@@ -2,8 +2,8 @@ package server
 
 import (
 	"atfm/app/models"
+	"errors"
 	"fmt"
-	"os"
 	"path"
 	"path/filepath"
 	"strings"
@@ -11,16 +11,50 @@ import (
 )
 
 type XDGTrashManager struct {
-	TrashDir    string
-	filemanager *FileManager
+	TrashDir string
+	fm       *FileManager
 }
 
-func (t *XDGTrashManager) RestoreFile(file string) (os.FileInfo, string, error) {
-	bp := path.Join(t.TrashDir, "info", file+".trashinfo")
-	fs := filemanager.GetFs(models.LOCALFM, config.AppConfig.Start.StartBasepath)
-	co, _, err := filemanager.OpenFileContent(bp, *fs)
+func NewXDGTrashManager(trashDir string, fileManager *FileManager) (*XDGTrashManager, error) {
+	filesPath := path.Join(trashDir, "files")
+	infoPath := path.Join(trashDir, "info")
+	var fpEx, ipEx bool
+	err := fileManager.Exist(models.FileArg{
+		Mod:      models.LOCALFM,
+		BasePath: "/",
+		Path:     filesPath,
+	}, &fpEx)
 	if err != nil {
-		return nil, "", err
+		return nil, err
+	}
+	err = fileManager.Exist(models.FileArg{
+		Mod:      models.LOCALFM,
+		BasePath: "/",
+		Path:     infoPath,
+	}, &ipEx)
+	if err != nil {
+		return nil, err
+	}
+	if !fpEx || !ipEx {
+		return nil, errors.New("xdg trash directories doesn't exists")
+	}
+
+	return &XDGTrashManager{
+		TrashDir: trashDir,
+		fm:       fileManager,
+	}, nil
+}
+
+func (t *XDGTrashManager) RestoreFile(file string, fileInfo *models.FileInfo) error {
+	bp := path.Join(t.TrashDir, "info", file+".trashinfo")
+	var co []byte
+	err := t.fm.ReadFile(models.FileArg{
+		Mod:      models.LOCALFM,
+		BasePath: "/",
+		Path:     bp,
+	}, &co)
+	if err != nil {
+		return err
 	}
 	s := strings.Split(string(co), "\n")
 	p := ""
@@ -30,22 +64,36 @@ func (t *XDGTrashManager) RestoreFile(file string) (os.FileInfo, string, error) 
 		}
 	}
 	op := path.Join(t.TrashDir, "files", file)
-	errr, c := filemanager.RenameFile(op, p, fs)
-	if errr != nil {
-		return nil, "", errr
-	}
-	err = filemanager.DeleteFile(path.Join(bp, file), *fs)
+	var c models.FileInfo
+	err = t.fm.RenameFile(models.FileRenameArg{
+		Mod:      models.LOCALFM,
+		BasePath: "/",
+		Path:     op,
+		NewName:  p,
+	}, &c)
 	if err != nil {
-		return nil, "", err
+		return err
 	}
-	return c, p, errr
+	err = t.fm.DeleteFile(models.FileArg{
+		Mod:      models.LOCALFM,
+		BasePath: "/",
+		Path:     bp,
+	})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func (t *XDGTrashManager) TrashFile(file string) error {
-	fs := filemanager.GetFs(filemanager.LOCALFM, config.AppConfig.Start.StartBasepath)
+func (t *XDGTrashManager) TrashFile(file string, fileInfo *models.FileInfo) error {
 	nf := path.Join(t.TrashDir, "info", filepath.Base(file)+".trashinfo")
 	np := path.Join(t.TrashDir, "files", filepath.Base(file))
-	exist, err := filemanager.Exist(np, *fs)
+	var exist bool
+	err := t.fm.Exist(models.FileArg{
+		Mod:      models.LOCALFM,
+		BasePath: "/",
+		Path:     np,
+	}, &exist)
 	if err != nil {
 		return err
 	}
@@ -56,36 +104,54 @@ func (t *XDGTrashManager) TrashFile(file string) error {
 		name := filename[0 : len(filename)-len(ext)]
 		np = path.Join(t.TrashDir, "files", fmt.Sprintf("%s%d%s", name, i, ext))
 		nf = path.Join(t.TrashDir, "info", fmt.Sprintf("%s%d%s", name, i, ext)+".trashinfo")
-		exist, err = filemanager.Exist(np, *fs)
+		err := t.fm.Exist(models.FileArg{
+			Mod:      models.LOCALFM,
+			BasePath: "/",
+			Path:     np,
+		}, &exist)
 		if err != nil {
 			return err
 		}
 	}
-	_, f, err := filemanager.CreateFile(nf, *fs)
-	if err != nil {
-		return err
-	}
+	var f models.FileInfo
 	dte := time.Now().Format("2022-04-16T17:22:22")
 	trashInfo := "[Trash Info]\n"
 	trashInfo += "Path=" + file + "\n"
 	trashInfo += "DeletionDate=" + dte + "\n"
-	_, errrr := f.WriteString(trashInfo)
-	if errrr != nil {
-		return errrr
+	err = t.fm.CreateAndWriteFile(models.FileWriteArg{
+		Mod:      models.LOCALFM,
+		BasePath: "/",
+		Path:     nf,
+		Content:  trashInfo,
+	}, &f)
+	if err != nil {
+		return err
 	}
-	errr, _ := filemanager.RenameFile(file, np, fs)
-	if errr != nil {
-		return errr
+	var ft models.FileInfo
+	err = t.fm.RenameFile(models.FileRenameArg{
+		Mod:      models.LOCALFM,
+		BasePath: "/",
+		Path:     file,
+		NewName:  np,
+	}, &ft)
+	if err != nil {
+		return err
 	}
+	*fileInfo = ft
 	return nil
 }
 
-func (t *XDGTrashManager) GetTrashInfo(file string) (string, string, error) {
+func (t *XDGTrashManager) GetTrashInfo(file string, trashInfo *models.TrashInfo) error {
 	bp := path.Join(t.TrashDir, "info")
-	fs := filemanager.GetFs(filemanager.LOCALFM, config.AppConfig.Start.StartBasepath)
-	co, _, err := filemanager.OpenFileContent(path.Join(bp, file), *fs)
+	fibp := path.Join(bp, file+".trashinfo")
+	var co []byte
+	err := t.fm.ReadFile(models.FileArg{
+		Mod:      models.LOCALFM,
+		BasePath: "/",
+		Path:     fibp,
+	}, &co)
 	if err != nil {
-		return "", "", err
+		return err
 	}
 	s := strings.Split(string(co), "\n")
 	p, d := "", ""
@@ -96,26 +162,53 @@ func (t *XDGTrashManager) GetTrashInfo(file string) (string, string, error) {
 			d = v[strings.Index(v, "="):]
 		}
 	}
-	return p, d, nil
+	if p == "" || d == "" {
+		return errors.New("")
+	}
+	*trashInfo = models.TrashInfo{
+		Path:        fibp,
+		RestorePath: p,
+		TrashDate:   d,
+	}
+	return nil
 }
 
-func (t *XDGTrashManager) EmptyTrash() {
-	fs := filemanager.GetFs(models.LOCALFM, config.AppConfig.Start.StartBasepath)
+func (t *XDGTrashManager) EmptyTrash() error {
 	filesPath := path.Join(t.TrashDir, "files")
 	infoPath := path.Join(t.TrashDir, "info")
-	c := filemanager.GetDirsInfoAt(filesPath, fs)
-	if c != nil {
-		for _, fi := range c {
-			filemanager.DeleteFile(path.Join(filesPath, fi.Name()), *fs)
-		}
-	}
-	c = filemanager.GetDirsInfoAt(infoPath, fs)
-	if c == nil {
-		return
+	var c []models.FileInfo
+	err := t.fm.ReadDir(models.FileArg{
+		Mod:      models.LOCALFM,
+		BasePath: "/",
+		Path:     path.Join(t.TrashDir, filesPath),
+	}, &c)
+	if err != nil {
+		return err
 	}
 	for _, fi := range c {
-		if filepath.Ext(fi.Name()) == ".trashinfo" {
-			filemanager.DeleteFile(path.Join(infoPath, fi.Name()), *fs)
+		var ti models.TrashInfo
+		err := t.GetTrashInfo(fi.Name, &ti)
+		if err != nil {
+			continue
+		}
+		t.fm.DeleteFile(models.FileArg{
+			Mod:      models.LOCALFM,
+			BasePath: "/",
+			Path:     ti.Path,
+		})
+
+		if err != nil {
+			continue
+		}
+		err = t.fm.DeleteFile(models.FileArg{
+			Mod:      models.LOCALFM,
+			BasePath: "/",
+			Path:     path.Join(infoPath, fi.Name+".trashinfo"),
+		})
+		if err != nil {
+			continue
 		}
 	}
+
+	return nil
 }

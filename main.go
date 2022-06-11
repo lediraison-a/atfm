@@ -21,6 +21,9 @@ func main() {
 	}
 	instances := app.NewInstancePool(client.RpcClient)
 	tui := app.NewTui(instances, config)
-	tui.NewInstance(config.Start.StartDir, config.Start.StartBasepath, models.LOCALFM, true)
+	err = tui.NewInstance(config.Start.StartDir, config.Start.StartBasepath, models.LOCALFM, true)
+	if err != nil {
+		panic(err)
+	}
 	tui.StartApp()
 }

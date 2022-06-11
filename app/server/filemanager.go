@@ -34,12 +34,19 @@ func (f *FileManager) getFs(basepath string, mod models.FsMod) (afero.Fs, error)
 	dfs, ok := f.filesystems[id]
 	if ok {
 		return dfs, nil
-
 	}
 	switch mod {
 	case models.LOCALFM:
 		dfs = afero.NewOsFs()
 		id := NewFsId(basepath, models.LOCALFM)
+		if basepath != "/" {
+			bpfs := afero.NewBasePathFs(dfs, basepath)
+			if bpfs == nil {
+				return nil, errors.New("cannot create afero BasePathFs : wrong basepath")
+			}
+			f.filesystems[id] = bpfs
+			return bpfs, nil
+		}
 		f.filesystems[id] = dfs
 		return dfs, nil
 	}
@@ -97,20 +104,22 @@ func (f *FileManager) RenameFile(arg models.FileRenameArg, fileInfo *models.File
 	if err != nil {
 		return err
 	}
-    err = fs.Rename(arg.Path, arg.NewName)
-    if err != nil {
-        return err
-    }
-    var fi models.FileInfo
-    err = f.StatFile(models.FileArg{
-    	Mod:      arg.Mod,
-    	BasePath: arg.BasePath,
-    	Path:     arg.Path,
-    }, &fi)
-    if err != nil {
-        return err
-    }
-    *fileInfo = fi
+	if arg.Path != arg.NewName {
+		err = fs.Rename(arg.Path, arg.NewName)
+		if err != nil {
+			return err
+		}
+	}
+	var fi models.FileInfo
+	err = f.StatFile(models.FileArg{
+		Mod:      arg.Mod,
+		BasePath: arg.BasePath,
+		Path:     arg.NewName,
+	}, &fi)
+	if err != nil {
+		return err
+	}
+	*fileInfo = fi
 	return nil
 }
 
@@ -119,12 +128,12 @@ func (f *FileManager) Exist(arg models.FileArg, exist *bool) error {
 	if err != nil {
 		return err
 	}
-    b, err := afero.Exists(fs, arg.Path)
-    if err != nil {
-        return err
-    }
-    *exist = b
-    return nil
+	b, err := afero.Exists(fs, arg.Path)
+	if err != nil {
+		return err
+	}
+	*exist = b
+	return nil
 }
 
 func (f *FileManager) CreateFile(arg models.FileArg, fileInfo *models.FileInfo) error {
@@ -132,14 +141,14 @@ func (f *FileManager) CreateFile(arg models.FileArg, fileInfo *models.FileInfo) 
 	if err != nil {
 		return err
 	}
-    fi, err := fs.Create(arg.Path)
-    if err != nil {
-        return err
-    }
-    fii, err := fi.Stat()
-    if err != nil {
-        return err
-    }
+	fi, err := fs.Create(arg.Path)
+	if err != nil {
+		return err
+	}
+	fii, err := fi.Stat()
+	if err != nil {
+		return err
+	}
 	*fileInfo = models.FileInfo{
 		Name:    fii.Name(),
 		IsDir:   fii.IsDir(),
@@ -147,24 +156,62 @@ func (f *FileManager) CreateFile(arg models.FileArg, fileInfo *models.FileInfo) 
 		Size:    fii.Size(),
 		ModTime: fii.ModTime(),
 	}
-    return nil
+	return nil
 }
 
-func (f *FileManager) ReadFile(arg models.FileArg, content*[]byte) error {
-    fs, err := f.getFs(arg.BasePath, arg.Mod)
+func (f *FileManager) CreateAndWriteFile(arg models.FileWriteArg, fileInfo *models.FileInfo) error {
+	fs, err := f.getFs(arg.BasePath, arg.Mod)
 	if err != nil {
 		return err
 	}
-    fc , err := afero.ReadFile(fs, arg.Path)
-    if err != nil {
-        return err
-    }
-    *content = fc
-    return nil
+	fi, err := fs.Create(arg.Path)
+	if err != nil {
+		return err
+	}
+	_, err = fi.Write([]byte(arg.Content))
+	if err != nil {
+		return err
+	}
+	fii, err := fi.Stat()
+	if err != nil {
+		return err
+	}
+	*fileInfo = models.FileInfo{
+		Name:    fii.Name(),
+		IsDir:   fii.IsDir(),
+		Mode:    fii.Mode(),
+		Size:    fii.Size(),
+		ModTime: fii.ModTime(),
+	}
+	return nil
+}
+
+func (f *FileManager) ReadFile(arg models.FileArg, content *[]byte) error {
+	fs, err := f.getFs(arg.BasePath, arg.Mod)
+	if err != nil {
+		return err
+	}
+	fc, err := afero.ReadFile(fs, arg.Path)
+	if err != nil {
+		return err
+	}
+	*content = fc
+	return nil
+}
+
+func (f *FileManager) DeleteFile(arg models.FileArg) error {
+	fs, err := f.getFs(arg.BasePath, arg.Mod)
+	if err != nil {
+		return err
+	}
+	err = fs.Remove(arg.Path)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (f *FileManager) WriteReader() error {
 
-
-    return nil
+	return nil
 }

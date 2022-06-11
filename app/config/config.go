@@ -38,7 +38,7 @@ func NewConfigDefault() *Config {
 	c := Config{
 		Start: StartConfig{
 			StartDir:      "/home/alban",
-			StartBasepath: "",
+			StartBasepath: "/",
 			Readonly:      false,
 		},
 		Display: DisplayConfig{
