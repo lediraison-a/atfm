@@ -34,3 +34,5 @@ func GetDirIcon(name string) string {
 var FileIcon = ""
 
 var DirIcon = ""
+
+var DirEmptyIcon = ""

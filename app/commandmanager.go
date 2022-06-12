@@ -27,12 +27,6 @@ func NewCommandManager() *CommandManager {
 }
 
 func (c *CommandManager) RunCommand(command string) error {
-	if command == "" {
-		return nil
-	}
-	if command[0] == '!' {
-		return c.RunCommandShell(command[1:])
-	}
 	c.CmdHistory = append(c.CmdHistory, command)
 	c.RootCmd.SetArgs(strings.Split(command, " "))
 	c.RootCmd.SetErr(c.CmdOut)
@@ -41,10 +35,12 @@ func (c *CommandManager) RunCommand(command string) error {
 	return c.RootCmd.Execute()
 }
 
-func (c *CommandManager) RunCommandShell(command string) error {
+func (c *CommandManager) RunCommandShell(command, workdir string, mod models.FsMod) error {
 	if command == "" {
 		return nil
 	}
+	c.CmdHistory = append(c.CmdHistory, command)
+	c.SetCurrentWorkingDir(workdir, mod)
 	co := strings.Split(command, " ")
 	cmd := exec.Command(co[0], co[1:]...)
 	c.CmdOut.Reset()
@@ -54,13 +50,13 @@ func (c *CommandManager) RunCommandShell(command string) error {
 	return nil
 }
 
-func (c *CommandManager) SetCurrentWorkingDir(ins *Instance) {
+func (c *CommandManager) SetCurrentWorkingDir(workdir string, mod models.FsMod) {
 	wd, err := os.Getwd()
 	if err != nil {
 		return
 	}
-	if ins.Mod == models.LOCALFM && wd != ins.DirPath {
-		err = os.Chdir(ins.DirPath)
+	if mod == models.LOCALFM && wd != workdir {
+		err = os.Chdir(workdir)
 		if err != nil {
 			return
 		}

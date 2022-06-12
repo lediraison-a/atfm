@@ -31,6 +31,8 @@ type Instance struct {
 	ShowHidden, ShowOpenParent bool
 
 	CurrentItem int
+
+	QuickSearch *Search
 }
 
 func NewInstance(mod models.FsMod, path, basePath string, id int) *Instance {
@@ -43,9 +45,10 @@ func NewInstance(mod models.FsMod, path, basePath string, id int) *Instance {
 		ShownContent:    []models.FileInfo{},
 		SelectedIndexes: []int{},
 		DirPath:         path,
-		ShowHidden:      true,
+		ShowHidden:      false,
 		CurrentItem:     0,
 		BasePath:        basePath,
+		QuickSearch:     NewSearch(),
 	}
 }
 

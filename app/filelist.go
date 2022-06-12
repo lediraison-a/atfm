@@ -24,24 +24,25 @@ type Filelist struct {
 
 	isDragSelect   bool
 	lastDragSelect int
+
+	DragSelectionSupport bool
 }
 
 func NewFileList(pane UiPane, getInstancePane func(UiPane) *Instance, inputHandler *InputHandler, displayConfig config.DisplayConfig) *Filelist {
 	b := tview.NewBox().SetBackgroundColor(style.GetColorWeb(displayConfig.Theme.Background_default))
 	m := Filelist{
-		Box:             b,
-		inputHandler:    inputHandler,
-		pane:            pane,
-		GetInstancePane: getInstancePane,
-		listOffset:      0,
-		displayConfig:   displayConfig,
-		isDragSelect:    false,
-		lastDragSelect:  0,
+		Box:                  b,
+		inputHandler:         inputHandler,
+		pane:                 pane,
+		GetInstancePane:      getInstancePane,
+		listOffset:           0,
+		displayConfig:        displayConfig,
+		isDragSelect:         false,
+		lastDragSelect:       0,
+		DragSelectionSupport: true,
 	}
 	return &m
 }
-
-
 
 func (m *Filelist) Draw(screen tcell.Screen) {
 	x, y, width, height := m.GetInnerRect()
@@ -96,6 +97,20 @@ func (m *Filelist) Draw(screen tcell.Screen) {
 		return infoTextStyle.Render(RenderFileInfo(item, m.displayConfig))
 	}
 
+	if itemCount == 0 {
+		infoTextStyle := style.NewStyle().
+			Foreground(m.displayConfig.Theme.Text_light).
+			Background(m.displayConfig.Theme.Background_default)
+		t := ""
+		if m.displayConfig.ShowIcons {
+			t = icons.DirEmptyIcon + "  Empty"
+		} else {
+			t = " - Empty - "
+		}
+		tview.Print(screen, infoTextStyle.Render(t), x, y+(height/2), width, tview.AlignCenter, tcell.ColorDefault)
+		return
+	}
+
 	for i := y; i <= height+1; i++ {
 		li := i - y
 		cIndex := m.listOffset + li
@@ -116,14 +131,19 @@ func (m *Filelist) InputHandler() func(event *tcell.EventKey, setFocus func(p tv
 }
 
 func (m *Filelist) MouseHandler() func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (bool, tview.Primitive) {
-	return m.WrapMouseHandler(func(action tview.MouseAction, event *tcell.EventMouse, _ func(p tview.Primitive)) (bool, tview.Primitive) {
+	return m.WrapMouseHandler(func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (bool, tview.Primitive) {
 		x, y := event.Position()
 		if !m.InRect(x, y) {
 			m.isDragSelect = false
 			return false, nil
 		}
-		redraw := m.HandleDragSelection(action, x, y) ||
-			m.inputHandler.listenInputMouse(event, action, "filelist")
+		omh := false
+		if handler := m.Box.MouseHandler(); handler != nil {
+			omh, _ = handler(action, event, setFocus)
+		}
+		redraw := (m.DragSelectionSupport && m.HandleDragSelection(action, x, y)) ||
+			m.inputHandler.listenInputMouse(event, action, "filelist") ||
+			omh
 		return redraw, m.Box
 	})
 }

@@ -37,20 +37,68 @@ func (t *Tui) GetActionsKey(commands []*cobra.Command) []*KeyAction {
 		Name:   "opencommandline",
 		Source: "",
 		Action: func() {
-			t.app.SetFocus(t.commandLine)
+			t.app.SetFocus(t.inputLine)
+			t.inputLine.OpenCommandLine()
 		},
 	}
 
+	opensearchline := KeyAction{
+		Name:   "opensearchline",
+		Source: "",
+		Action: func() {
+			t.app.SetFocus(t.inputLine)
+			t.inputLine.OpenSearchLine()
+		},
+	}
+
+	searchjumpforward := KeyAction{
+		Name:   "searchjumpforward",
+		Source: "",
+		Action: func() {
+			ins := t.getInstancePane(t.selectedPane)
+			ins.QuickSearch.SearchJumpForward(ins)
+		},
+	}
+
+	searchjumpbackward := KeyAction{
+		Name:   "searchjumpbackward",
+		Source: "",
+		Action: func() {
+			ins := t.getInstancePane(t.selectedPane)
+			ins.QuickSearch.SearchJumpBackward(ins)
+		},
+	}
+
+	runsearch := KeyAction{
+		Name:   "searchrun",
+		Source: "",
+		Action: func() {
+			searchText := t.inputLine.GetText()
+			ins := t.getInstancePane(t.selectedPane)
+			ins.QuickSearch.SearchContent(searchText, ins)
+			t.app.SetFocus(t.filelists[t.selectedPane])
+		},
+	}
+
+	// TODO implement this better
 	runcommand := KeyAction{
 		Name:   "cmdrun",
 		Source: "",
 		Action: func() {
-			command := t.commandLine.GetText()
-			t.cmdManager.RunCommand(command)
+			ins := t.getInstancePane(t.selectedPane)
+			command := t.inputLine.GetText()
+			if command == "" {
+				return
+			}
+			if command[0] == '!' {
+				t.cmdManager.RunCommandShell(command[1:], ins.DirPath, ins.Mod)
+			} else {
+				t.cmdManager.RunCommand(command)
+			}
 			ct := t.cmdManager.CmdOut
 			if ct.Len() > 0 {
 				t.pager.SetText(ct.String())
-				nblines := len(strings.Split(ct.String(), "\n"))
+				nblines := len(strings.Split(ct.String(), "\n")) + 1
 				x, y, width, height := t.layers.GetRect()
 				t.pager.SetRect(x, y+(height-nblines), width, nblines+1)
 				t.layers.ShowPage("pager")
@@ -60,5 +108,12 @@ func (t *Tui) GetActionsKey(commands []*cobra.Command) []*KeyAction {
 		},
 	}
 
-	return append(acs, &normalmod, &opencommandline, &runcommand)
+	return append(acs,
+		&normalmod,
+		&opencommandline,
+		&runcommand,
+		&opensearchline,
+		&runsearch,
+		&searchjumpbackward,
+		&searchjumpforward)
 }

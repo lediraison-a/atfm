@@ -126,7 +126,7 @@ func (m *Tabline) InputHandler() func(event *tcell.EventKey, setFocus func(p tvi
 }
 
 func (m *Tabline) MouseHandler() func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (bool, tview.Primitive) {
-	return m.WrapMouseHandler(func(action tview.MouseAction, event *tcell.EventMouse, _ func(p tview.Primitive)) (bool, tview.Primitive) {
+	return m.WrapMouseHandler(func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (bool, tview.Primitive) {
 		if !m.InRect(event.Position()) {
 			return false, nil
 		}

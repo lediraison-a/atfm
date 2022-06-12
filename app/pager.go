@@ -1,6 +1,8 @@
 package app
 
 import (
+	"atfm/app/config"
+	"atfm/app/style"
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
@@ -9,14 +11,19 @@ type Pager struct {
 	*tview.TextView
 
 	inputHandler *InputHandler
+
+	displayConfig config.DisplayConfig
 }
 
-func NewPager(inputHandler *InputHandler) *Pager {
+func NewPager(inputHandler *InputHandler, displayConfig config.DisplayConfig) *Pager {
 	textView := tview.NewTextView()
+	textView.SetBackgroundColor(style.GetColorWeb(displayConfig.Theme.Background_light))
+	textView.SetTextColor(style.GetColorWeb(displayConfig.Theme.Text_default))
 	textView.SetDynamicColors(true)
 	p := Pager{
-		TextView:     textView,
-		inputHandler: inputHandler,
+		TextView:      textView,
+		inputHandler:  inputHandler,
+		displayConfig: displayConfig,
 	}
 	p.SetBlurFunc(func() {
 		p.Clear()

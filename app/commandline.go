@@ -8,41 +8,47 @@ import (
 	"github.com/rivo/tview"
 )
 
-type CommandLine struct {
+type InputLineSource string
+
+const (
+	COMMAND_LINE InputLineSource = "commandline"
+	SEARCH_LINE  InputLineSource = "searchline"
+)
+
+type InputLine struct {
 	*tview.InputField
 
 	displayConfig config.DisplayConfig
 
 	inputHandler *InputHandler
 
-	Commands *CommandManager
-
-	page func(string)
+	source InputLineSource
 }
 
-func NewCommandLine(commands *CommandManager, inputHandler *InputHandler, displayConfig config.DisplayConfig) *CommandLine {
-	inputField := tview.NewInputField().SetLabel(":")
+func NewInputLine(inputHandler *InputHandler, displayConfig config.DisplayConfig) *InputLine {
+	inputField := tview.NewInputField()
 	ifst := tcell.StyleDefault
 	ifst = ifst.Background(style.GetColorWeb(displayConfig.Theme.Background_default))
 	ifst = ifst.Foreground(style.GetColorWeb(displayConfig.Theme.Text_default))
 	ifst = ifst.Italic(true)
 	inputField.SetFieldStyle(ifst)
-	cl := CommandLine{
+	cl := InputLine{
 		InputField:    inputField,
 		displayConfig: displayConfig,
 		inputHandler:  inputHandler,
-		Commands:      commands,
+		source:        COMMAND_LINE,
 	}
 	cl.SetBlurFunc(func() {
 		cl.SetText("")
+		cl.SetLabel("")
 	})
 	return &cl
 }
 
-func (m *CommandLine) InputHandler() func(event *tcell.EventKey, setFocus func(p tview.Primitive)) {
+func (m *InputLine) InputHandler() func(event *tcell.EventKey, setFocus func(p tview.Primitive)) {
 	return m.WrapInputHandler(func(event *tcell.EventKey, setFocus func(p tview.Primitive)) {
 		if event.Key() == tcell.KeyRune ||
-			!m.inputHandler.listenInputKey(event, "commandline", true) {
+			!m.inputHandler.listenInputKey(event, string(m.source), true) {
 			if handler := m.InputField.InputHandler(); handler != nil {
 				handler(event, setFocus)
 			}
@@ -50,11 +56,21 @@ func (m *CommandLine) InputHandler() func(event *tcell.EventKey, setFocus func(p
 	})
 }
 
-func (m *CommandLine) MouseHandler() func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (bool, tview.Primitive) {
+func (m *InputLine) MouseHandler() func(action tview.MouseAction, event *tcell.EventMouse, setFocus func(p tview.Primitive)) (bool, tview.Primitive) {
 	return m.WrapMouseHandler(func(action tview.MouseAction, event *tcell.EventMouse, _ func(p tview.Primitive)) (bool, tview.Primitive) {
 		if !m.InRect(event.Position()) {
 			return false, nil
 		}
-		return m.inputHandler.listenInputMouse(event, action, "commandline"), m.InputField
+		return m.inputHandler.listenInputMouse(event, action, string(m.source)), m.InputField
 	})
+}
+
+func (m *InputLine) OpenCommandLine() {
+	m.source = COMMAND_LINE
+	m.SetLabel(":")
+}
+
+func (m *InputLine) OpenSearchLine() {
+	m.source = SEARCH_LINE
+	m.SetLabel("/")
 }

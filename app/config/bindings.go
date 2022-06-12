@@ -13,6 +13,8 @@ func NewKeyBindingsDefault() map[string]string {
 		"pager:q":             "normalmod",
 		"commandline:<Esc>":   "normalmod",
 		"commandline:<Enter>": "cmdrun",
+		"searchline:<Esc>":    "normalmod",
+		"searchline:<Enter>":  "searchrun",
 		"filelist:<Esc>":      "unselectall",
 		"<Enter>":             "opencurrent",
 		"<Backspace2>":        "openparent",
@@ -20,6 +22,9 @@ func NewKeyBindingsDefault() map[string]string {
 		"H":                   "opennext",
 		"l":                   "opencurrent",
 		":":                   "opencommandline",
+		"/":                   "opensearchline",
+		"n":                   "searchjumpforward",
+		"N":                   "searchjumpbackward",
 	}
 }
 
