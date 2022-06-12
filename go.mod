@@ -5,11 +5,13 @@ go 1.18
 require github.com/rivo/tview v0.0.0-20220307222120-9994674d60a8
 
 require (
+	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/muesli/reflow v0.2.1-0.20210115123740-9e1d0d53df68 // indirect
 	github.com/muesli/termenv v0.11.1-0.20220204035834-5ac8409525e0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
+	google.golang.org/protobuf v1.28.0 // indirect
 )
 
 require (
