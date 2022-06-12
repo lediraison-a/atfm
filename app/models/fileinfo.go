@@ -11,4 +11,5 @@ type FileInfo struct {
 	Mode    fs.FileMode
 	Size    int64
 	ModTime time.Time
+	Symlink string
 }

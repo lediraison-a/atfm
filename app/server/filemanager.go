@@ -3,6 +3,8 @@ package server
 import (
 	"atfm/app/models"
 	"errors"
+	"os"
+	"path"
 
 	"github.com/spf13/afero"
 )
@@ -74,6 +76,7 @@ func (f *FileManager) ReadDir(arg models.FileArg, dirContent *[]models.FileInfo)
 			Mode:    entry.Mode(),
 			Size:    entry.Size(),
 			ModTime: entry.ModTime(),
+			Symlink: f.readSimlink(path.Join(arg.Path, entry.Name()), dfs, arg.Mod, entry),
 		})
 	}
 	*dirContent = dci
@@ -95,6 +98,7 @@ func (f *FileManager) StatFile(arg models.FileArg, fileInfo *models.FileInfo) er
 		Mode:    di.Mode(),
 		Size:    di.Size(),
 		ModTime: di.ModTime(),
+		Symlink: f.readSimlink(arg.Path, dfs, arg.Mod, di),
 	}
 	return nil
 }
@@ -155,6 +159,7 @@ func (f *FileManager) CreateFile(arg models.FileArg, fileInfo *models.FileInfo) 
 		Mode:    fii.Mode(),
 		Size:    fii.Size(),
 		ModTime: fii.ModTime(),
+		Symlink: f.readSimlink(arg.Path, fs, arg.Mod, fii),
 	}
 	return nil
 }
@@ -214,4 +219,33 @@ func (f *FileManager) DeleteFile(arg models.FileArg) error {
 func (f *FileManager) WriteReader() error {
 
 	return nil
+}
+
+func (f *FileManager) readSimlink(name string, fs afero.Fs, mod models.FsMod, info os.FileInfo) string {
+	t := ""
+	var err error
+	if mod != models.LOCALFM {
+		return t
+	}
+	if info.Mode()&os.ModeSymlink == 0 {
+		return t
+	}
+	if afs, ok := fs.(*afero.OsFs); ok {
+		t, err = afs.ReadlinkIfPossible(name)
+		if err != nil {
+			return t
+		}
+	} else if afs, ok := fs.(*afero.BasePathFs); ok {
+		t, err = afs.ReadlinkIfPossible(name)
+		if err != nil {
+			return t
+		}
+	} else if afs, ok := fs.(*afero.ReadOnlyFs); ok {
+		t, err = afs.ReadlinkIfPossible(name)
+		if err != nil {
+			return t
+		}
+	}
+
+	return t
 }

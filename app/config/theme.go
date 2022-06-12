@@ -3,6 +3,7 @@ package config
 type ThemeConfig struct {
 	Background_default   string
 	Background_primary   string
+	Background_light     string
 	Background_secondary string
 	Text_default         string
 	Text_light           string
@@ -12,6 +13,7 @@ type ThemeConfig struct {
 func NewThemeDefault() ThemeConfig {
 	return ThemeConfig{
 		Background_default:   "#090c10",
+		Background_light:     "#0d1117",
 		Background_primary:   "#1a5dad",
 		Background_secondary: "#3e5673",
 		Text_default:         "#c9d1d9",

@@ -4,6 +4,7 @@ import (
 	"atfm/app/config"
 	"atfm/app/icons"
 	"atfm/app/models"
+	"atfm/app/style"
 	"atfm/generics"
 
 	"github.com/gdamore/tcell/v2"
@@ -26,7 +27,7 @@ type Filelist struct {
 }
 
 func NewFileList(pane UiPane, getInstancePane func(UiPane) *Instance, inputHandler *InputHandler, displayConfig config.DisplayConfig) *Filelist {
-	b := tview.NewBox().SetBackgroundColor(GetColorWeb(displayConfig.Theme.Background_default))
+	b := tview.NewBox().SetBackgroundColor(style.GetColorWeb(displayConfig.Theme.Background_default))
 	m := Filelist{
 		Box:             b,
 		inputHandler:    inputHandler,
@@ -39,6 +40,8 @@ func NewFileList(pane UiPane, getInstancePane func(UiPane) *Instance, inputHandl
 	}
 	return &m
 }
+
+
 
 func (m *Filelist) Draw(screen tcell.Screen) {
 	x, y, width, height := m.GetInnerRect()
@@ -75,11 +78,11 @@ func (m *Filelist) Draw(screen tcell.Screen) {
 			bg = m.displayConfig.Theme.Background_primary
 		}
 
-		iconStyle := NewStyle().
+		iconStyle := style.NewStyle().
 			Foreground(icol).
 			Background(bg).
 			Padding(1)
-		lineMainTextStyle := NewStyle().
+		lineMainTextStyle := style.NewStyle().
 			Foreground(m.displayConfig.Theme.Text_default).
 			Background(bg).
 			PaddingRight(1)
@@ -87,10 +90,10 @@ func (m *Filelist) Draw(screen tcell.Screen) {
 	}
 
 	printInfoText := func(item models.FileInfo, _ int) string {
-		infoTextStyle := NewStyle().
+		infoTextStyle := style.NewStyle().
 			Foreground(m.displayConfig.Theme.Text_light).
 			Background(m.displayConfig.Theme.Background_default)
-		return infoTextStyle.Render("")
+		return infoTextStyle.Render(RenderFileInfo(item, m.displayConfig))
 	}
 
 	for i := y; i <= height+1; i++ {
@@ -120,7 +123,7 @@ func (m *Filelist) MouseHandler() func(action tview.MouseAction, event *tcell.Ev
 			return false, nil
 		}
 		redraw := m.HandleDragSelection(action, x, y) ||
-            m.inputHandler.listenInputMouse(event, action, "filelist")
+			m.inputHandler.listenInputMouse(event, action, "filelist")
 		return redraw, m.Box
 	})
 }

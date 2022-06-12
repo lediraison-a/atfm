@@ -3,6 +3,7 @@ package app
 import (
 	"atfm/app/config"
 	"atfm/app/models"
+	"atfm/app/style"
 	"path"
 	"path/filepath"
 	"strings"
@@ -27,9 +28,10 @@ type Pathline struct {
 
 func NewPathline(pane UiPane, getInstancePane func(UiPane) *Instance, inputHandler *InputHandler, displayConfig config.DisplayConfig) *Pathline {
 	inputField := tview.NewInputField().SetText("test")
+	inputField.SetBackgroundColor(style.GetColorWeb(displayConfig.Theme.Background_light))
 	fstyle := tcell.StyleDefault.
-		Foreground(GetColorWeb(displayConfig.Theme.Text_default)).
-		Background(GetColorWeb(displayConfig.Theme.Background_default))
+		Foreground(style.GetColorWeb(displayConfig.Theme.Text_default)).
+		Background(style.GetColorWeb(displayConfig.Theme.Background_light))
 	inputField.SetFieldStyle(fstyle)
 	pl := Pathline{
 		InputField:    inputField,
@@ -62,15 +64,19 @@ func (m *Pathline) Draw(screen tcell.Screen) {
 			td = ""
 		}
 
-		dirStyle := NewStyle().
-			Background(m.displayConfig.Theme.Background_default).
+		dirStyle := style.NewStyle().
+			Background(m.displayConfig.Theme.Background_light).
 			Foreground(m.displayConfig.Theme.Text_default)
-		baseStyle := NewStyle().
-			Background(m.displayConfig.Theme.Background_default).
+		baseStyle := style.NewStyle().
+			Background(m.displayConfig.Theme.Background_light).
 			Foreground(m.displayConfig.Theme.Text_primary).
 			Bold(true)
 		line := dirStyle.Render(td) + baseStyle.Render(ta)
+		fstyle := style.NewStyle().
+			Background(m.displayConfig.Theme.Background_light).
+			Width(width - tview.TaggedStringWidth(line))
 
+		line += fstyle.Render("")
 		tview.Print(screen, line, x, y, width, tview.AlignLeft, tcell.ColorDefault)
 	}
 }

@@ -2,6 +2,7 @@ package app
 
 import (
 	"atfm/app/config"
+	"atfm/app/style"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -22,8 +23,8 @@ type CommandLine struct {
 func NewCommandLine(commands *CommandManager, inputHandler *InputHandler, displayConfig config.DisplayConfig) *CommandLine {
 	inputField := tview.NewInputField().SetLabel(":")
 	ifst := tcell.StyleDefault
-	ifst = ifst.Background(GetColorWeb(displayConfig.Theme.Background_default))
-	ifst = ifst.Foreground(GetColorWeb(displayConfig.Theme.Text_default))
+	ifst = ifst.Background(style.GetColorWeb(displayConfig.Theme.Background_default))
+	ifst = ifst.Foreground(style.GetColorWeb(displayConfig.Theme.Text_default))
 	ifst = ifst.Italic(true)
 	inputField.SetFieldStyle(ifst)
 	cl := CommandLine{

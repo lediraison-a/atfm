@@ -43,7 +43,7 @@ func NewInstance(mod models.FsMod, path, basePath string, id int) *Instance {
 		ShownContent:    []models.FileInfo{},
 		SelectedIndexes: []int{},
 		DirPath:         path,
-		ShowHidden:      false,
+		ShowHidden:      true,
 		CurrentItem:     0,
 		BasePath:        basePath,
 	}

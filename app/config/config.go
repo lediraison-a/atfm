@@ -32,6 +32,9 @@ type DisplayConfig struct {
 	ShowTabTitle   bool
 	ShowTabNumber  bool
 	Theme          ThemeConfig
+	DateFormat     string
+	FileInfoFormat []string
+	InfoSeparator  string
 }
 
 func NewConfigDefault() *Config {
@@ -44,11 +47,14 @@ func NewConfigDefault() *Config {
 		Display: DisplayConfig{
 			ShowIcons:      true,
 			ShowOpenParent: true,
-			TabLen:         16,
-			DynamicTabSize: false,
+			TabLen:         14,
+			DynamicTabSize: true,
 			ShowTabTitle:   true,
 			ShowTabNumber:  true,
 			Theme:          NewThemeDefault(),
+			DateFormat:     "Jan _2 15:04:05",
+			FileInfoFormat: []string{"~> {symlink}", "{size}", "{date}"},
+			InfoSeparator:  " • ",
 		},
 		Preview: PreviewConfig{
 			FilePreviewer:       "pistol",

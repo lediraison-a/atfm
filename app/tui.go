@@ -3,6 +3,7 @@ package app
 import (
 	"atfm/app/config"
 	"atfm/app/models"
+	"atfm/app/style"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -201,27 +202,27 @@ func SetAppColors(t config.ThemeConfig) {
 	COLOR_TEXT_SECONDARY_CONTRAST := t.Background_default
 
 	tview.Styles = tview.Theme{
-		PrimitiveBackgroundColor: GetColorWeb(COLOR_BACKGROUND),
+		PrimitiveBackgroundColor: style.GetColorWeb(COLOR_BACKGROUND),
 		// Main background color for primitives.
-		ContrastBackgroundColor: GetColorWeb(COLOR_CONTRAST_BACKGROUND),
+		ContrastBackgroundColor: style.GetColorWeb(COLOR_CONTRAST_BACKGROUND),
 		// Background color for contrasting elements.
-		MoreContrastBackgroundColor: GetColorWeb(COLOR_CONTRAST_BACKGROUND_PLUS),
+		MoreContrastBackgroundColor: style.GetColorWeb(COLOR_CONTRAST_BACKGROUND_PLUS),
 		// Background color for even more contrasting elements.
-		BorderColor: GetColorWeb(COLOR_BORDER),
+		BorderColor: style.GetColorWeb(COLOR_BORDER),
 		// Box borders.
-		TitleColor: GetColorWeb(COLOR_TITLE),
+		TitleColor: style.GetColorWeb(COLOR_TITLE),
 		// Box titles.
-		GraphicsColor: GetColorWeb(COLOR_GRAPHICS),
+		GraphicsColor: style.GetColorWeb(COLOR_GRAPHICS),
 		// Graphics.
-		PrimaryTextColor: GetColorWeb(COLOR_TEXT_PRIMARY),
+		PrimaryTextColor: style.GetColorWeb(COLOR_TEXT_PRIMARY),
 		// Primary text.
-		SecondaryTextColor: GetColorWeb(COLOR_TEXT_SECONDARY),
+		SecondaryTextColor: style.GetColorWeb(COLOR_TEXT_SECONDARY),
 		// Secondary text (e.g. labels).
-		TertiaryTextColor: GetColorWeb(COLOR_TEXT_TERTIARY),
+		TertiaryTextColor: style.GetColorWeb(COLOR_TEXT_TERTIARY),
 		// Tertiary text (e.g. subtitles, notes).
-		InverseTextColor: GetColorWeb(COLOR_TEXT_INVERSE),
+		InverseTextColor: style.GetColorWeb(COLOR_TEXT_INVERSE),
 		// Text on primary-colored backgrounds.
-		ContrastSecondaryTextColor: GetColorWeb(COLOR_TEXT_SECONDARY_CONTRAST),
+		ContrastSecondaryTextColor: style.GetColorWeb(COLOR_TEXT_SECONDARY_CONTRAST),
 		// Secondary text on ContrastBackgroundColor-colored backgrounds.
 	}
 }

@@ -2,6 +2,7 @@ package app
 
 import (
 	"atfm/app/config"
+	"atfm/app/style"
 	"fmt"
 	"path"
 
@@ -30,7 +31,7 @@ type Tabline struct {
 }
 
 func NewTabline(pane UiPane, getInstanceIndex func(int) *Instance, inputHandler *InputHandler, displayConfig config.DisplayConfig) *Tabline {
-	b := tview.NewBox().SetBackgroundColor(GetColorWeb(displayConfig.Theme.Background_default))
+	b := tview.NewBox().SetBackgroundColor(style.GetColorWeb(displayConfig.Theme.Background_default))
 	tablen := 16
 	tl := Tabline{
 		Box:              b,
@@ -51,7 +52,7 @@ func NewTabline(pane UiPane, getInstanceIndex func(int) *Instance, inputHandler 
 func (m *Tabline) Draw(screen tcell.Screen) {
 	x, y, width, _ := m.GetInnerRect()
 
-	tablen := m.getTabSizeCompute()
+	tablen := m.getTabSizeCompute(width)
 
 	nbTabWidth := width / tablen
 	if m.SelectedTab >= m.tabShowOffset+nbTabWidth {
@@ -72,7 +73,31 @@ func (m *Tabline) Draw(screen tcell.Screen) {
 
 	tabtext := ""
 
+	tabNumStyle := style.NewStyle().
+		Background(m.displayConfig.Theme.Background_default).
+		Foreground(m.displayConfig.Theme.Text_light).
+		Padding(1)
+	tabSelectedNumStyle := style.NewStyle().
+		Background(m.displayConfig.Theme.Background_light).
+		Foreground(m.displayConfig.Theme.Text_default).
+		Padding(1)
+	tabTitleStyle := style.NewStyle().
+		Background(m.displayConfig.Theme.Background_default).
+		Foreground(m.displayConfig.Theme.Text_light).Alignment(style.ALIGN_LEFT)
+	tabSelectedTitleStyle := style.NewStyle().
+		Background(m.displayConfig.Theme.Background_light).
+		Foreground(m.displayConfig.Theme.Text_default).
+		PaddingRight(1).
+		Italic(true).Bold(true).Alignment(style.ALIGN_LEFT)
+
 	for i := m.tabShowOffset; i <= m.tabShowOffset+nbTabWidth; i++ {
+		nst := tabNumStyle
+		tst := tabTitleStyle
+		if i == m.SelectedTab {
+			nst = tabSelectedNumStyle
+			tst = tabSelectedTitleStyle
+		}
+
 		if i >= len(m.Tabs) {
 			break
 		}
@@ -82,10 +107,11 @@ func (m *Tabline) Draw(screen tcell.Screen) {
 		t := ""
 
 		if m.displayConfig.ShowTabNumber {
-			t += fmt.Sprintf("%d ", i+1)
+			t += nst.Render(fmt.Sprintf("%d", i+1))
 		}
+		tst = tst.Width(tablen - tview.TaggedStringWidth(t))
 		if m.displayConfig.ShowTabTitle {
-			t += path.Base(ins.DirPath) + " "
+			t += tst.Render(path.Base(ins.DirPath))
 		}
 		tabtext += t
 	}
@@ -177,7 +203,7 @@ func (m *Tabline) GetSelectedTab() int {
 
 func (m *Tabline) GetUnderMouseTabIndex(mousePosX int) int {
 	tablinePosX, _, tablineWidth, _ := m.GetInnerRect()
-	tablen := m.getTabSizeCompute()
+	tablen := m.getTabSizeCompute(tablineWidth)
 	nbTabWidth := tablineWidth / tablen
 	xx := mousePosX - tablinePosX
 	if xx < 0 {
@@ -194,7 +220,7 @@ func (m *Tabline) GetUnderMouseTabIndex(mousePosX int) int {
 }
 
 func (m *Tabline) GetUnderNoTab(mousePosX, tablinePosX, tablineWidth int) bool {
-	tablen := m.getTabSizeCompute()
+	tablen := m.getTabSizeCompute(tablineWidth)
 	xx := mousePosX - tablinePosX
 	if xx < 0 {
 		return true
@@ -222,11 +248,7 @@ func (m *Tabline) clearTabs() {
 }
 
 func (m *Tabline) resizeTabs(tablineWidth int) {
-	if !m.displayConfig.DynamicTabSize {
-		return
-	}
-
-	rw := len(m.Tabs) * m.displayConfig.TabLen
+	rw := (len(m.Tabs) + 1) * m.displayConfig.TabLen
 	if rw > tablineWidth {
 		m.tablen = tablineWidth / len(m.Tabs)
 	} else {
@@ -234,7 +256,7 @@ func (m *Tabline) resizeTabs(tablineWidth int) {
 	}
 }
 
-func (m *Tabline) getTabSizeCompute() int {
+func (m *Tabline) getTabSizeCompute(width int) int {
 	CountDigits := func(i int) int {
 		count := 0
 		for i > 0 {
@@ -244,6 +266,9 @@ func (m *Tabline) getTabSizeCompute() int {
 		return count
 	}
 	tablen := m.tablen
+	if m.displayConfig.DynamicTabSize && tablen*len(m.Tabs) > width {
+		tablen = width / len(m.Tabs)
+	}
 	if !m.doShowTabName() {
 		numLen := CountDigits(len(m.Tabs))
 		tablen = 2 + numLen
