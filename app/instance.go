@@ -2,6 +2,7 @@ package app
 
 import (
 	"atfm/app/models"
+	"atfm/app/server"
 	"atfm/app/sort"
 	"atfm/generics"
 	"errors"
@@ -9,6 +10,8 @@ import (
 	"path"
 	"strings"
 )
+
+var FileManagerService = server.NewFileManager()
 
 type Instance struct {
 	rpcClient *rpc.Client
@@ -80,12 +83,14 @@ func (s *Instance) OpenDir(path, basepath string, mod models.FsMod) error {
 		Path:     path,
 	}
 	var dc []models.FileInfo
-	err := s.rpcClient.Call("FileManager.ReadDir", arg, &dc)
+	// err := s.rpcClient.Call("FileManager.ReadDir", arg, &dc)
+	err := FileManagerService.ReadDir(arg, &dc)
 	if err != nil {
 		return err
 	}
 	var di models.FileInfo
-	err = s.rpcClient.Call("FileManager.StatFile", arg, &di)
+	// err = s.rpcClient.Call("FileManager.StatFile", arg, &di)
+	err = FileManagerService.StatFile(arg, &di)
 	if err != nil {
 		return err
 	}
@@ -105,7 +110,8 @@ func (s *Instance) ReadDir(path, basepath string, mod models.FsMod) ([]models.Fi
 		Path:     path,
 	}
 	var dc []models.FileInfo
-	err := s.rpcClient.Call("FileManager.ReadDir", arg, &dc)
+	// err := s.rpcClient.Call("FileManager.ReadDir", arg, &dc)
+	err := FileManagerService.ReadDir(arg, &dc)
 	if err != nil {
 		return nil, err
 	}

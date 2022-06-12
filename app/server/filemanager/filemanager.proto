@@ -1,0 +1,29 @@
+syntax = "proto3";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "atfm/app/server/filemanager";
+
+package filemanager;
+
+message FileInfo {
+        string Name = 1;
+        bool IsDir = 2;
+        uint32  Mode = 3;
+        uint64  Size = 4;
+        google.protobuf.Timestamp ModTime = 5;
+        string Symlink = 6;
+}
+
+message FileArg {
+        string Path = 1;
+        string BasePath = 2;
+        string Mod = 3;
+}
+
+message FileInfos {
+        repeated FileInfo Files = 1;
+}
+
+service FileManager {
+    rpc ReadDir(FileArg) returns (FileInfos) {}
+}

@@ -2,22 +2,20 @@ module atfm
 
 go 1.18
 
-require github.com/rivo/tview v0.0.0-20220307222120-9994674d60a8
-
 require (
-	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/inconshreveable/mousetrap v1.0.0 // indirect
-	github.com/mattn/go-isatty v0.0.14 // indirect
-	github.com/muesli/reflow v0.2.1-0.20210115123740-9e1d0d53df68 // indirect
-	github.com/muesli/termenv v0.11.1-0.20220204035834-5ac8409525e0 // indirect
-	github.com/spf13/pflag v1.0.5 // indirect
-	google.golang.org/protobuf v1.28.0 // indirect
+	github.com/rivo/tview v0.0.0-20220307222120-9994674d60a8
+	github.com/rjeczalik/notify v0.9.2
+	google.golang.org/protobuf v1.28.0
 )
 
 require (
-	github.com/charmbracelet/lipgloss v0.5.0
+	github.com/inconshreveable/mousetrap v1.0.0 // indirect
+	github.com/spf13/pflag v1.0.5 // indirect
+)
+
+require (
 	github.com/gdamore/encoding v1.0.0 // indirect
-	github.com/gdamore/tcell/v2 v2.5.1 // indirect
+	github.com/gdamore/tcell/v2 v2.5.1
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
