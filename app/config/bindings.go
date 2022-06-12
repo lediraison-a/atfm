@@ -21,10 +21,14 @@ func NewKeyBindingsDefault() map[string]string {
 		"h":                   "openprevious",
 		"H":                   "opennext",
 		"l":                   "opencurrent",
-		":":                   "opencommandline",
-		"/":                   "opensearchline",
+		":":                   "cmdinput",
+		"/":                   "searchinput",
 		"n":                   "searchjumpforward",
 		"N":                   "searchjumpbackward",
+		"searchline:<Up>":     "searchprevious",
+		"searchline:<Down>":   "searchnext",
+		"commandline:<Up>":    "cmdprevious",
+		"commandline:<Down>":  "cmdnext",
 	}
 }
 

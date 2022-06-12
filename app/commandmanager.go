@@ -11,9 +11,10 @@ import (
 )
 
 type CommandManager struct {
-	RootCmd    *cobra.Command
-	CmdOut     *bytes.Buffer
-	CmdHistory []string
+	RootCmd            *cobra.Command
+	CmdOut             *bytes.Buffer
+	CmdHistory         []string
+	selectedCmdHistory int
 }
 
 func NewCommandManager() *CommandManager {
@@ -21,13 +22,16 @@ func NewCommandManager() *CommandManager {
 	bout := &bytes.Buffer{}
 
 	return &CommandManager{
-		RootCmd: &rcmd,
-		CmdOut:  bout,
+		RootCmd:            &rcmd,
+		CmdOut:             bout,
+		CmdHistory:         []string{},
+		selectedCmdHistory: 0,
 	}
 }
 
 func (c *CommandManager) RunCommand(command string) error {
 	c.CmdHistory = append(c.CmdHistory, command)
+	c.selectedCmdHistory = len(c.CmdHistory)
 	c.RootCmd.SetArgs(strings.Split(command, " "))
 	c.RootCmd.SetErr(c.CmdOut)
 	c.RootCmd.SetOut(c.CmdOut)
@@ -39,7 +43,8 @@ func (c *CommandManager) RunCommandShell(command, workdir string, mod models.FsM
 	if command == "" {
 		return nil
 	}
-	c.CmdHistory = append(c.CmdHistory, command)
+	c.CmdHistory = append(c.CmdHistory, "!"+command)
+	c.selectedCmdHistory = len(c.CmdHistory)
 	c.SetCurrentWorkingDir(workdir, mod)
 	co := strings.Split(command, " ")
 	cmd := exec.Command(co[0], co[1:]...)
@@ -61,4 +66,32 @@ func (c *CommandManager) SetCurrentWorkingDir(workdir string, mod models.FsMod) 
 			return
 		}
 	}
+}
+
+func (c *CommandManager) CmdNext() string {
+	histLen := len(c.CmdHistory)
+	if histLen == 0 {
+		return ""
+	}
+	c.selectedCmdHistory++
+	t := ""
+	if c.selectedCmdHistory > histLen {
+		c.selectedCmdHistory = histLen
+	}
+	if c.selectedCmdHistory != histLen {
+		t = c.CmdHistory[c.selectedCmdHistory]
+	}
+	return t
+}
+
+func (c *CommandManager) CmdPrevious() string {
+	if len(c.CmdHistory) == 0 {
+		return ""
+	}
+	c.selectedCmdHistory--
+	if c.selectedCmdHistory < 0 {
+		c.selectedCmdHistory = 0
+	}
+	t := c.CmdHistory[c.selectedCmdHistory]
+	return t
 }

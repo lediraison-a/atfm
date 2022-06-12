@@ -34,7 +34,7 @@ func (t *Tui) GetActionsKey(commands []*cobra.Command) []*KeyAction {
 	}
 
 	opencommandline := KeyAction{
-		Name:   "opencommandline",
+		Name:   "cmdinput",
 		Source: "",
 		Action: func() {
 			t.app.SetFocus(t.inputLine)
@@ -43,11 +43,57 @@ func (t *Tui) GetActionsKey(commands []*cobra.Command) []*KeyAction {
 	}
 
 	opensearchline := KeyAction{
-		Name:   "opensearchline",
+		Name:   "searchinput",
 		Source: "",
 		Action: func() {
 			t.app.SetFocus(t.inputLine)
 			t.inputLine.OpenSearchLine()
+		},
+	}
+
+	cmdprevious := KeyAction{
+		Name:   "cmdprevious",
+		Source: "",
+		Action: func() {
+			cmd := t.cmdManager.CmdPrevious()
+			if t.inputLine.source == COMMAND_LINE {
+				t.inputLine.SetText(cmd)
+			}
+		},
+	}
+
+	cmdnext := KeyAction{
+		Name:   "cmdnext",
+		Source: "",
+		Action: func() {
+			cmd := t.cmdManager.CmdNext()
+			if t.inputLine.source == COMMAND_LINE {
+				t.inputLine.SetText(cmd)
+			}
+		},
+	}
+
+	searchprevious := KeyAction{
+		Name:   "searchprevious",
+		Source: "",
+		Action: func() {
+			ins := t.getInstancePane(t.selectedPane)
+			st := ins.QuickSearch.SearchPrevious()
+			if t.inputLine.source == SEARCH_LINE {
+				t.inputLine.SetText(st)
+			}
+		},
+	}
+
+	searchnext := KeyAction{
+		Name:   "searchnext",
+		Source: "",
+		Action: func() {
+			ins := t.getInstancePane(t.selectedPane)
+			st := ins.QuickSearch.SearchNext()
+			if t.inputLine.source == SEARCH_LINE {
+				t.inputLine.SetText(st)
+			}
 		},
 	}
 
@@ -115,5 +161,9 @@ func (t *Tui) GetActionsKey(commands []*cobra.Command) []*KeyAction {
 		&opensearchline,
 		&runsearch,
 		&searchjumpbackward,
-		&searchjumpforward)
+		&searchjumpforward,
+		&cmdnext,
+		&cmdprevious,
+		&searchnext,
+		&searchprevious)
 }

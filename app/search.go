@@ -16,17 +16,20 @@ type Search struct {
 	LastSearchText string
 	SrchHistory    []string
 
+	selectedSearchHistory int
+
 	ignoreCase bool
 	incSearch  bool
 }
 
 func NewSearch() *Search {
 	return &Search{
-		SearchRes:      []SearchElement{},
-		LastSearchText: "",
-		SrchHistory:    []string{},
-		ignoreCase:     true,
-		incSearch:      true,
+		SearchRes:             []SearchElement{},
+		LastSearchText:        "",
+		SrchHistory:           []string{},
+		selectedSearchHistory: 0,
+		ignoreCase:            true,
+		incSearch:             true,
 	}
 }
 
@@ -84,6 +87,7 @@ func (s *Search) SearchContent(text string, ins *Instance) {
 	}
 
 	s.SrchHistory = append(s.SrchHistory, text)
+	s.selectedSearchHistory = len(s.SrchHistory)
 
 	s.LastSearchText = text
 
@@ -133,4 +137,32 @@ func (s *Search) SearchContent(text string, ins *Instance) {
 	if s.incSearch && len(m) > 0 {
 		ins.CurrentItem = m[0].OriginalIndex
 	}
+}
+
+func (c *Search) SearchNext() string {
+	histLen := len(c.SrchHistory)
+	if histLen == 0 {
+		return ""
+	}
+	c.selectedSearchHistory++
+	t := ""
+	if c.selectedSearchHistory > histLen {
+		c.selectedSearchHistory = histLen
+	}
+	if c.selectedSearchHistory != histLen {
+		t = c.SrchHistory[c.selectedSearchHistory]
+	}
+	return t
+}
+
+func (c *Search) SearchPrevious() string {
+	if len(c.SrchHistory) == 0 {
+		return ""
+	}
+	c.selectedSearchHistory--
+	if c.selectedSearchHistory < 0 {
+		c.selectedSearchHistory = 0
+	}
+	t := c.SrchHistory[c.selectedSearchHistory]
+	return t
 }
