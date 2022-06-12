@@ -31,9 +31,10 @@ type Tui struct {
 	layers *tview.Pages
 	screen *tcell.Screen
 
-	filelists []*Filelist
-	tablines  []*Tabline
-	pathlines []*Pathline
+	filelists   []*Filelist
+	tablines    []*Tabline
+	pathlines   []*Pathline
+	statuslines []*StatusLine
 
 	pager *Pager
 
@@ -71,6 +72,7 @@ func NewTui(instances *InstancePool, appConfig *config.Config) *Tui {
 		filelists:      []*Filelist{},
 		tablines:       []*Tabline{},
 		pathlines:      []*Pathline{},
+		statuslines:    []*StatusLine{},
 		pager:          NewPager(inputHandler, appConfig.Display),
 		inputLine:      NewInputLine(inputHandler, appConfig.Display),
 		showDoublePane: false,
@@ -99,14 +101,24 @@ func NewTui(instances *InstancePool, appConfig *config.Config) *Tui {
 	tui.tablines = append(tui.tablines, tll, tlr)
 
 	pll := NewPathline(LEFT, tui.getInstancePane, tui.inputHandler, appConfig.Display)
-	//tll.SetFocusFunc(func() {
-	//	tui.selectedPane = LEFT
-	//})
+	tll.SetFocusFunc(func() {
+		tui.selectedPane = LEFT
+	})
 	plr := NewPathline(RIGHT, tui.getInstancePane, tui.inputHandler, appConfig.Display)
-	//tlr.SetFocusFunc(func() {
-	//	tui.selectedPane = RIGHT
-	//})
+	tlr.SetFocusFunc(func() {
+		tui.selectedPane = RIGHT
+	})
 	tui.pathlines = append(tui.pathlines, pll, plr)
+
+	sll := NewStatusline(LEFT, tui.getInstancePane, tui.inputHandler, appConfig.Display)
+	tll.SetFocusFunc(func() {
+		tui.selectedPane = LEFT
+	})
+	slr := NewStatusline(RIGHT, tui.getInstancePane, tui.inputHandler, appConfig.Display)
+	tlr.SetFocusFunc(func() {
+		tui.selectedPane = RIGHT
+	})
+	tui.statuslines = append(tui.statuslines, sll, slr)
 
 	tui.setAppGridSinglePane()
 	tui.layers.AddPage("main", tui.grid, true, true)
@@ -166,28 +178,33 @@ func (t *Tui) ToggleDoublePane() {
 }
 
 func (t *Tui) setAppGridDoublePane() {
-	t.grid.SetRows(1, 1, 0, 1)
+	t.grid.SetRows(1, 1, 0, 1, 1)
 	t.grid.SetColumns(0, 1, 0)
 	t.grid.AddItem(t.filelists[LEFT], 2, 0, 1, 1, 1, 1, true)
 	t.grid.AddItem(t.tablines[LEFT], 0, 0, 1, 1, 1, 1, false)
 	t.grid.AddItem(t.pathlines[LEFT], 1, 0, 1, 1, 1, 1, false)
+	t.grid.AddItem(t.statuslines[LEFT], 3, 0, 1, 1, 1, 1, false)
 
 	t.grid.AddItem(t.filelists[RIGHT], 2, 2, 1, 1, 1, 1, true)
 	t.grid.AddItem(t.tablines[RIGHT], 0, 2, 1, 1, 1, 1, false)
 	t.grid.AddItem(t.pathlines[RIGHT], 1, 2, 1, 1, 1, 1, false)
-	t.grid.AddItem(t.inputLine, 3, 0, 1, 3, 1, 1, false)
+	t.grid.AddItem(t.statuslines[RIGHT], 3, 2, 1, 1, 1, 1, false)
+
+	t.grid.AddItem(t.inputLine, 4, 0, 1, 3, 1, 1, false)
 	// This next line is added to fix a very wierd bug :
 	// Last element added to the grid don't receive click event, so I added a useless item
 	t.grid.AddItem(tview.NewBox(), 0, 0, 0, 0, 1, 1, false)
 }
 
 func (t *Tui) setAppGridSinglePane() {
-	t.grid.SetRows(1, 1, 0, 1)
+	t.grid.SetRows(1, 1, 0, 1, 1)
 	t.grid.SetColumns(0)
 	t.grid.AddItem(t.filelists[LEFT], 2, 0, 1, 1, 1, 1, true)
 	t.grid.AddItem(t.tablines[LEFT], 0, 0, 1, 1, 1, 1, false)
 	t.grid.AddItem(t.pathlines[LEFT], 1, 0, 1, 1, 1, 1, false)
-	t.grid.AddItem(t.inputLine, 3, 0, 1, 1, 1, 1, false)
+	t.grid.AddItem(t.statuslines[LEFT], 3, 0, 1, 1, 1, 1, false)
+
+	t.grid.AddItem(t.inputLine, 4, 0, 1, 1, 1, 1, false)
 	// This next line is added to fix a very wierd bug :
 	// Last element added to the grid don't receive click event, so I added a useless item
 	t.grid.AddItem(tview.NewBox(), 0, 0, 0, 0, 1, 1, false)

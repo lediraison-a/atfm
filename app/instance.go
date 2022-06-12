@@ -94,6 +94,7 @@ func (s *Instance) OpenDir(path, basepath string, mod models.FsMod) error {
 	s.ShownContent = s.GetShownContent(dc)
 	s.DirInfo = di
 	s.CurrentItem = 0
+	s.QuickSearch.ResetSearch()
 	return nil
 }
 
