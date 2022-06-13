@@ -1,27 +1,47 @@
 package server
 
 import (
-	"github.com/rjeczalik/notify"
+	"atfm/app/models"
 	"log"
+
+	"github.com/rjeczalik/notify"
 )
 
 type NotifyManager struct {
+	listeners map[int]chan notify.EventInfo
+
+	filemanager *FileManager
 }
 
-func (s *NotifyManager) SuscribeNotify(instanceId int, path string) {
-	c := make(chan notify.EventInfo, 1)
+func NewNotifyManager() *NotifyManager {
+	return &NotifyManager{
+		listeners: map[int]chan notify.EventInfo{},
+	}
+}
 
-	// Set up a watchpoint listening on events within current working directory.
-	// Dispatch each create and remove events separately to c.
+func (s *NotifyManager) SuscribeRefresh(instanceId int, path string, refreshFunc func([]models.FileInfo)) {
+	pc, ok := s.listeners[instanceId]
+	if ok {
+		notify.Stop(pc)
+		delete(s.listeners, instanceId)
+	}
+	c := make(chan notify.EventInfo, 1)
 	if err := notify.Watch(path, c, notify.Create, notify.Remove); err != nil {
 		log.Fatal(err)
 	}
+	s.listeners[instanceId] = c
 
 	go func() {
 		defer notify.Stop(c)
 		for {
 			ei := <-c
 			log.Println("Got event:", ei)
+			var dc []models.FileInfo
+			err := s.filemanager.ReadDir(models.FileArg{}, &dc)
+			if err != nil {
+				continue
+			}
+			refreshFunc(dc)
 		}
 	}()
 	// Block until an event is received.
