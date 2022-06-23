@@ -8,6 +8,8 @@ type Config struct {
 	MouseBindings map[string]string
 	LeaderKey     string
 	EnableMouse   bool
+	IncSearch     bool
+	SearchIgnCase bool
 }
 
 type PreviewConfig struct {
@@ -66,6 +68,8 @@ func NewConfigDefault() *Config {
 		KeyBindings:   NewKeyBindingsDefault(),
 		MouseBindings: NewMouseBindingsDefault(),
 		EnableMouse:   true,
+		IncSearch:     true,
+		SearchIgnCase: true,
 	}
 	return &c
 }

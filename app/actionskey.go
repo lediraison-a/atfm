@@ -121,7 +121,7 @@ func (t *Tui) GetActionsKey(commands []*cobra.Command) []*KeyAction {
 		Action: func() {
 			searchText := t.inputLine.GetText()
 			ins := t.getInstancePane(t.selectedPane)
-			ins.QuickSearch.SearchContent(searchText, ins)
+			ins.QuickSearch.SearchContent(searchText, ins, true, t.appConfig.SearchIgnCase)
 			t.app.SetFocus(t.filelists[t.selectedPane])
 		},
 	}

@@ -17,9 +17,6 @@ type Search struct {
 	SrchHistory    []string
 
 	selectedSearchHistory int
-
-	ignoreCase bool
-	incSearch  bool
 }
 
 func NewSearch() *Search {
@@ -28,8 +25,6 @@ func NewSearch() *Search {
 		LastSearchText:        "",
 		SrchHistory:           []string{},
 		selectedSearchHistory: 0,
-		ignoreCase:            true,
-		incSearch:             true,
 	}
 }
 
@@ -74,7 +69,11 @@ func (s *Search) SearchJumpBackward(ins *Instance) {
 	ins.CurrentItem = s.SearchRes[len(s.SearchRes)-1].OriginalIndex
 }
 
-func (s *Search) SearchContent(text string, ins *Instance) {
+func (s *Search) SearchContent(text string, ins *Instance, saveSeachHyst bool, ignoreCase bool) {
+	text = strings.Trim(text, " ")
+	if text == "" {
+		return
+	}
 	Mystrutil := func(s, subs string) []int {
 		ns := s
 		r := []int{}
@@ -91,14 +90,14 @@ func (s *Search) SearchContent(text string, ins *Instance) {
 
 	s.LastSearchText = text
 
-	if s.ignoreCase {
+	if ignoreCase {
 		text = strings.ToLower(text)
 	}
 	m := []SearchElement{}
 	for i, fi := range ins.ShownContent {
 		v := fi.Name
 		vv := v
-		if s.ignoreCase {
+		if ignoreCase {
 			vv = strings.ToLower(v)
 		}
 		if strings.HasPrefix(vv, text) {
@@ -114,7 +113,7 @@ func (s *Search) SearchContent(text string, ins *Instance) {
 		for i, fi := range ins.ShownContent {
 			v := fi.Name
 			vv := v
-			if s.ignoreCase {
+			if ignoreCase {
 				vv = strings.ToLower(v)
 			}
 			if strings.Contains(vv, text) {
@@ -134,35 +133,35 @@ func (s *Search) SearchContent(text string, ins *Instance) {
 
 	s.SearchRes = m
 
-	if s.incSearch && len(m) > 0 {
+	if len(m) > 0 {
 		ins.CurrentItem = m[0].OriginalIndex
 	}
 }
 
-func (c *Search) SearchNext() string {
-	histLen := len(c.SrchHistory)
+func (s *Search) SearchNext() string {
+	histLen := len(s.SrchHistory)
 	if histLen == 0 {
 		return ""
 	}
-	c.selectedSearchHistory++
+	s.selectedSearchHistory++
 	t := ""
-	if c.selectedSearchHistory > histLen {
-		c.selectedSearchHistory = histLen
+	if s.selectedSearchHistory > histLen {
+		s.selectedSearchHistory = histLen
 	}
-	if c.selectedSearchHistory != histLen {
-		t = c.SrchHistory[c.selectedSearchHistory]
+	if s.selectedSearchHistory != histLen {
+		t = s.SrchHistory[s.selectedSearchHistory]
 	}
 	return t
 }
 
-func (c *Search) SearchPrevious() string {
-	if len(c.SrchHistory) == 0 {
+func (s *Search) SearchPrevious() string {
+	if len(s.SrchHistory) == 0 {
 		return ""
 	}
-	c.selectedSearchHistory--
-	if c.selectedSearchHistory < 0 {
-		c.selectedSearchHistory = 0
+	s.selectedSearchHistory--
+	if s.selectedSearchHistory < 0 {
+		s.selectedSearchHistory = 0
 	}
-	t := c.SrchHistory[c.selectedSearchHistory]
+	t := s.SrchHistory[s.selectedSearchHistory]
 	return t
 }

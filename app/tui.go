@@ -74,11 +74,15 @@ func NewTui(instances *InstancePool, appConfig *config.Config) *Tui {
 		pathlines:      []*Pathline{},
 		statuslines:    []*StatusLine{},
 		pager:          NewPager(inputHandler, appConfig.Display),
-		inputLine:      NewInputLine(inputHandler, appConfig.Display),
+		inputLine:      &InputLine{},
 		showDoublePane: false,
 		selectedPane:   LEFT,
 	}
 	app.EnableMouse(appConfig.EnableMouse)
+
+	tui.inputLine = NewInputLine(inputHandler, func() *Instance {
+		return tui.getInstancePane(tui.selectedPane)
+	}, *appConfig)
 
 	fll := NewFileList(LEFT, tui.getInstancePane, tui.inputHandler, appConfig.Display)
 	fll.SetFocusFunc(func() {

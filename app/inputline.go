@@ -18,25 +18,28 @@ const (
 type InputLine struct {
 	*tview.InputField
 
-	displayConfig config.DisplayConfig
+	appConfig config.Config
 
 	inputHandler *InputHandler
+
+	getInstance func() *Instance
 
 	source InputLineSource
 }
 
-func NewInputLine(inputHandler *InputHandler, displayConfig config.DisplayConfig) *InputLine {
+func NewInputLine(inputHandler *InputHandler, getInstance func() *Instance, appConfig config.Config) *InputLine {
 	inputField := tview.NewInputField()
 	ifst := tcell.StyleDefault
-	ifst = ifst.Background(style.GetColorWeb(displayConfig.Theme.Background_default))
-	ifst = ifst.Foreground(style.GetColorWeb(displayConfig.Theme.Text_default))
+	ifst = ifst.Background(style.GetColorWeb(appConfig.Display.Theme.Background_default))
+	ifst = ifst.Foreground(style.GetColorWeb(appConfig.Display.Theme.Text_default))
 	ifst = ifst.Italic(true)
 	inputField.SetFieldStyle(ifst)
 	cl := InputLine{
-		InputField:    inputField,
-		displayConfig: displayConfig,
-		inputHandler:  inputHandler,
-		source:        COMMAND_LINE,
+		InputField:   inputField,
+		appConfig:    appConfig,
+		inputHandler: inputHandler,
+		source:       COMMAND_LINE,
+		getInstance:  getInstance,
 	}
 	cl.SetBlurFunc(func() {
 		cl.SetText("")
@@ -71,6 +74,14 @@ func (m *InputLine) OpenCommandLine() {
 }
 
 func (m *InputLine) OpenSearchLine() {
+	m.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if m.appConfig.IncSearch && event.Key() == tcell.KeyRune {
+			ins := m.getInstance()
+			st := m.GetText() + string(event.Rune())
+			ins.QuickSearch.SearchContent(st, ins, false, m.appConfig.SearchIgnCase)
+		}
+		return event
+	})
 	m.source = SEARCH_LINE
 	m.SetLabel("/")
 }
