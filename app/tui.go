@@ -146,6 +146,12 @@ func (t *Tui) NewInstance(openPath, basePath string, mod models.FsMod, setCurren
 	return nil
 }
 
+func (t *Tui) RefreshInstances(path string, content []models.FileInfo, selfDelete bool) {
+	t.app.QueueUpdateDraw(func() {
+		t.instances.RefreshInstances(path, content, selfDelete)
+	})
+}
+
 func (t *Tui) StartApp() {
 	if err := t.app.SetRoot(t.layers, true).SetFocus(t.layers).Run(); err != nil {
 		panic(err)

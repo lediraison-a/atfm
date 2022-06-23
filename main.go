@@ -4,6 +4,7 @@ import (
 	"atfm/app"
 	"atfm/app/config"
 	"atfm/app/models"
+	"atfm/app/server"
 )
 
 func main() {
@@ -18,8 +19,15 @@ func main() {
 	//  	panic(err)
 	// }
 	// instances := app.NewInstancePool(client.RpcClient)
-	instances := app.NewInstancePool(nil)
+	instances := app.NewInstancePool(nil, config.Start)
 	tui := app.NewTui(instances, config)
+	or := func(path string, content []models.FileInfo, selfDelete bool) error {
+		tui.RefreshInstances(path, content, selfDelete)
+		return nil
+	}
+	app.FileManagerService = server.NewFileManager()
+	app.NotifyManagerService = server.NewNotifyManager(app.FileManagerService, or)
+
 	err := tui.NewInstance(config.Start.StartDir, config.Start.StartBasepath, models.LOCALFM, true)
 	if err != nil {
 		panic(err)

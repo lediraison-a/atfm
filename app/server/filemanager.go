@@ -140,6 +140,19 @@ func (f *FileManager) Exist(arg models.FileArg, exist *bool) error {
 	return nil
 }
 
+func (f *FileManager) CreateDir(arg models.FileArg, fileInfo *models.FileInfo) error {
+	fs, err := f.getFs(arg.BasePath, arg.Mod)
+	if err != nil {
+		return err
+	}
+	err = fs.Mkdir(arg.Path, 0777)
+	if err != nil {
+		return err
+	}
+	return f.StatFile(arg, fileInfo)
+	return nil
+}
+
 func (f *FileManager) CreateFile(arg models.FileArg, fileInfo *models.FileInfo) error {
 	fs, err := f.getFs(arg.BasePath, arg.Mod)
 	if err != nil {

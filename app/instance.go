@@ -11,7 +11,9 @@ import (
 	"strings"
 )
 
-var FileManagerService = server.NewFileManager()
+var FileManagerService *server.FileManager
+
+var NotifyManagerService *server.NotifyManager
 
 type Instance struct {
 	rpcClient *rpc.Client
@@ -94,6 +96,16 @@ func (s *Instance) OpenDir(path, basepath string, mod models.FsMod) error {
 	if err != nil {
 		return err
 	}
+
+	if mod == models.LOCALFM {
+		NotifyManagerService.UnsubscribeRefresh(models.FileArg{
+			Mod:      s.Mod,
+			BasePath: s.BasePath,
+			Path:     s.DirPath,
+		})
+		NotifyManagerService.SubscribeRefresh(arg)
+	}
+
 	s.DirPath = path
 	s.Content = dc
 	s.ShownContent = s.GetShownContent(dc)
