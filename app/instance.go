@@ -8,6 +8,7 @@ import (
 	"errors"
 	"net/rpc"
 	"path"
+	"path/filepath"
 	"strings"
 )
 
@@ -79,6 +80,16 @@ func (s *Instance) OpenDirSaveHistory(path, basepath string, mod models.FsMod) e
 }
 
 func (s *Instance) OpenDir(path, basepath string, mod models.FsMod) error {
+	if filepath.Ext(path) == ".zip" {
+		basepath = path
+		path = "/"
+		mod = models.ZIPFM
+	} else if strings.HasSuffix(path, ".tar.gz") {
+		basepath = path
+		path = "/"
+		mod = models.TARFM
+	}
+
 	arg := models.FileArg{
 		Mod:      mod,
 		BasePath: basepath,
@@ -106,6 +117,8 @@ func (s *Instance) OpenDir(path, basepath string, mod models.FsMod) error {
 		NotifyManagerService.SubscribeRefresh(arg)
 	}
 
+	s.BasePath = basepath
+	s.Mod = mod
 	s.DirPath = path
 	s.Content = dc
 	s.ShownContent = s.GetShownContent(dc)
@@ -152,7 +165,8 @@ func (s *Instance) IsSelected(index int) bool {
 }
 
 func (s *Instance) CanShowOpenParent() bool {
-	return s.ShowOpenParent && (s.DirPath != "/" || s.Mod == models.ARCHIVEFM)
+	return s.ShowOpenParent &&
+		(s.DirPath != "/" || (s.Mod == models.TARFM || s.Mod == models.ZIPFM))
 }
 
 func (s *Instance) GetHistoryRecCurrent() models.NavHistoryRec {
@@ -168,7 +182,7 @@ func (s *Instance) GetParentInfo() (string, string, models.FsMod) {
 	pth := s.DirPath
 	bp := s.BasePath
 	mod := s.Mod
-	if pth == "/" && mod == models.ARCHIVEFM {
+	if pth == "/" && models.IsArchive(s.Mod) {
 
 	} else {
 		pth = path.Dir(s.DirPath)

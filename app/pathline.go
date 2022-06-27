@@ -54,7 +54,7 @@ func (m *Pathline) Draw(screen tcell.Screen) {
 	if m.editing {
 		m.InputField.Draw(screen)
 	} else {
-		_, t := m.getPathlineTexts()
+		tbp, t := m.getPathlineTexts()
 		td := path.Dir(t)
 		if td != "/" {
 			td += "/"
@@ -63,7 +63,9 @@ func (m *Pathline) Draw(screen tcell.Screen) {
 		if td == ta && td == "/" {
 			td = ""
 		}
-
+		bpStyle := style.NewStyle().
+			Background(m.displayConfig.Theme.Background_light).
+			Foreground(m.displayConfig.Theme.Text_light)
 		dirStyle := style.NewStyle().
 			Background(m.displayConfig.Theme.Background_light).
 			Foreground(m.displayConfig.Theme.Text_default)
@@ -71,7 +73,7 @@ func (m *Pathline) Draw(screen tcell.Screen) {
 			Background(m.displayConfig.Theme.Background_light).
 			Foreground(m.displayConfig.Theme.Text_primary).
 			Bold(true)
-		line := dirStyle.Render(td) + baseStyle.Render(ta)
+		line := bpStyle.Render(tbp) + dirStyle.Render(td) + baseStyle.Render(ta)
 		fstyle := style.NewStyle().
 			Background(m.displayConfig.Theme.Background_light).
 			Width(width - tview.TaggedStringWidth(line))
@@ -170,7 +172,7 @@ func (m *Pathline) autocomplete(currentText string) []string {
 func (m *Pathline) getPathlineTexts() (string, string) {
 	ins := m.getInstance(m.pane)
 	tb := ""
-	if ins.Mod == models.ARCHIVEFM || ins.Mod == models.SYSTRASH {
+	if ins.Mod == models.SYSTRASH || models.IsArchive(ins.Mod) {
 		tb = filepath.Base(ins.BasePath)
 	}
 	t := ins.DirPath

@@ -1,12 +1,17 @@
 package server
 
 import (
+	"archive/tar"
+	"archive/zip"
 	"atfm/app/models"
+	"compress/gzip"
 	"errors"
 	"os"
 	"path"
 
 	"github.com/spf13/afero"
+	"github.com/spf13/afero/tarfs"
+	"github.com/spf13/afero/zipfs"
 )
 
 type FsId struct {
@@ -51,6 +56,46 @@ func (f *FileManager) getFs(basepath string, mod models.FsMod) (afero.Fs, error)
 		}
 		f.filesystems[id] = dfs
 		return dfs, nil
+	case models.ZIPFM:
+		osFs, err := f.getFs("/", models.LOCALFM)
+		if err != nil {
+			return nil, err
+		}
+		ff, err := osFs.Open(basepath)
+		if err != nil {
+			return nil, err
+		}
+		defer ff.Close()
+		fi, err := ff.Stat()
+		if err != nil {
+			return nil, err
+		}
+		zipReader, err := zip.NewReader(ff, fi.Size())
+		if err != nil {
+			return nil, err
+		}
+		zfs := zipfs.New(zipReader)
+		f.filesystems[id] = zfs
+		return zfs, nil
+	case models.TARFM:
+		osFs, err := f.getFs("/", models.LOCALFM)
+		if err != nil {
+			return nil, err
+		}
+		ff, err := osFs.Open(basepath)
+		if err != nil {
+			return nil, err
+		}
+		defer ff.Close()
+		gzr, err := gzip.NewReader(ff)
+		if err != nil {
+			return nil, err
+		}
+		defer gzr.Close()
+		tarReader := tar.NewReader(gzr)
+		tfs := tarfs.New(tarReader)
+		f.filesystems[id] = tfs
+		return tfs, nil
 	}
 	return nil, errors.New("no file system to open path")
 }
