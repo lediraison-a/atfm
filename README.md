@@ -1,8 +1,5 @@
----
-lang: en-US
----
 # ATFM
-ATFM (Another Terminal File Manager) is a fully featured terminal file manager, written in go, and packed in a single
+ATFM (Another Terminal File Manager) is a fully featured and vim inspired terminal file manager, written in go, and packed in a single
 executable with no dependencies needed.
 
 ## Features
@@ -43,7 +40,7 @@ Pull requests are welcome. Please open an issue first to discuss what you would 
 [MIT](https://choosealicense.com/licenses/mit/)
 
 ## Acknowledgements
-I learned go while working on this project. The code is not clean and not commented.
+I learned go while working on this project. The code is not commented.
 
 Big thanks to all of these awesome projects I used to build ATFM.
 - golang
