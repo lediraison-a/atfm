@@ -2,10 +2,12 @@ package config
 
 func NewKeyBindingsDefault() map[string]string {
 	return map[string]string{
-		"<Up>":           "pageup",
+		"<C-Up>":         "pageup",
 		"k":              "scrollup",
-		"<Down>":         "pagedown",
+		"<Up>":           "scrollup",
+		"<C-Down>":       "pagedown",
 		"j":              "scrolldown",
+		"<Down>":         "scrolldown",
 		"qq":             "quit",
 		"qa":             "quitall",
 		"filelist:<Esc>": "unselectall",

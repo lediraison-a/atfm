@@ -120,12 +120,13 @@ func (il *InputHandler) listenInputKey(event *tcell.EventKey, source string, ign
 	rune := event.Rune()
 	p := ""
 	if rune == ' ' {
-		p += "<Space>"
+		p += fmt.Sprintf("<%s%s>", ModifiersNames[event.Modifiers()], "Space")
 	} else if key == tcell.KeyRune {
-		p += string(rune)
+		p += fmt.Sprintf("%s%s", ModifiersNames[event.Modifiers()], string(rune))
 	} else {
-		p += fmt.Sprintf("<%s>", tcell.KeyNames[event.Key()])
+		p += fmt.Sprintf("<%s%s>", ModifiersNames[event.Modifiers()], tcell.KeyNames[event.Key()])
 	}
+
 	if !il.listening {
 		il.startListen()
 	}
