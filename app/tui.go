@@ -434,6 +434,44 @@ func (t *Tui) GetAppCommands() []*cobra.Command {
 			ins.ShownContent = ins.GetShownContent(ins.Content)
 		},
 	}
+	pagedown := &cobra.Command{
+		Use:  "pagedown",
+		Args: cobra.ExactArgs(0),
+		Run: func(_ *cobra.Command, _ []string) {
+			ins := t.getInstancePane(t.selectedPane)
+			fl := t.filelists[t.selectedPane]
+			_, _, _, h := fl.GetRect()
+			pos := fl.listOffset + (h - 1)
+			if ins.CurrentItem == pos {
+				ins.CurrentItem += h - 1
+			} else {
+				ins.CurrentItem = pos
+			}
+
+			if ins.CurrentItem >= len(ins.ShownContent) {
+				ins.CurrentItem = len(ins.ShownContent) - 1
+			}
+		},
+	}
+	pageup := &cobra.Command{
+		Use:  "pageup",
+		Args: cobra.ExactArgs(0),
+		Run: func(_ *cobra.Command, _ []string) {
+			ins := t.getInstancePane(t.selectedPane)
+			fl := t.filelists[t.selectedPane]
+			_, _, _, h := fl.GetRect()
+			pos := fl.listOffset
+			if ins.CurrentItem == pos {
+				ins.CurrentItem -= h - 1
+			} else {
+				ins.CurrentItem = pos
+			}
+
+			if ins.CurrentItem < 0 {
+				ins.CurrentItem = 0
+			}
+		},
+	}
 
 	return []*cobra.Command{
 		quit,
@@ -456,5 +494,7 @@ func (t *Tui) GetAppCommands() []*cobra.Command {
 		opennext,
 		unselectall,
 		togglehiddenfiles,
+		pagedown,
+		pageup,
 	}
 }

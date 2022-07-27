@@ -2,9 +2,9 @@ package config
 
 func NewKeyBindingsDefault() map[string]string {
 	return map[string]string{
-		"<Up>":           "scrollup",
+		"<Up>":           "pageup",
 		"k":              "scrollup",
-		"<Down>":         "scrolldown",
+		"<Down>":         "pagedown",
 		"j":              "scrolldown",
 		"qq":             "quit",
 		"qa":             "quitall",
