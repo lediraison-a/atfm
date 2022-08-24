@@ -3,9 +3,11 @@ package config
 func NewKeyBindingsDefault() map[string]string {
 	return map[string]string{
 		"<C-Up>":         "pageup",
+		"<C-j>":          "pageup",
 		"k":              "scrollup",
 		"<Up>":           "scrollup",
 		"<C-Down>":       "pagedown",
+		"<C-k>":          "pagedown",
 		"j":              "scrolldown",
 		"<Down>":         "scrolldown",
 		"qq":             "quit",
@@ -20,6 +22,8 @@ func NewKeyBindingsDefault() map[string]string {
 		"/":              "searchinput",
 		"n":              "searchjumpforward",
 		"N":              "searchjumpbackward",
+        "GG":             "scrolllast",
+        "gg":             "scrollfirst",
 
 		"pager:<Esc>": "normalmod",
 		"pager:q":     "normalmod",
