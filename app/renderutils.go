@@ -23,17 +23,17 @@ func ByteCountSI(b int64) string {
 		float64(b)/float64(div), "kMGTPE"[exp])
 }
 
-func RenderFileInfo(item models.FileInfo, conf config.DisplayConfig) string {
+func RenderFileInfo(item models.FileInfo, fileInfoFormat []string, conf config.DisplayConfig) string {
 	t := ""
 	tmode := item.Mode.String()
 	tdate := item.ModTime.Format(conf.DateFormat)
 	tsize := ByteCountSI(item.Size)
-    if item.IsDir {
-        tsize = ""
-    }
+	if item.IsDir {
+		tsize = ""
+	}
 	tname := item.Name
 	ic, _ := icons.GetFileIcon(item.Name, conf.Theme.Text_default)
-	for i, v := range conf.FileInfoFormat {
+	for i, v := range fileInfoFormat {
 		vt := v
 		if strings.Contains(vt, `{mod}`) && tmode != "" {
 			re := regexp.MustCompile(`{mod}`)

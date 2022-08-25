@@ -223,3 +223,7 @@ func (s *Instance) GetShownContent(content []models.FileInfo) []models.FileInfo 
 	}
 	return sdc
 }
+
+func (s *Instance) IsEmpty() bool {
+	return len(s.ShownContent) == 0
+}

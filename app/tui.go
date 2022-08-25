@@ -114,11 +114,11 @@ func NewTui(instances *InstancePool, appConfig *config.Config) *Tui {
 	})
 	tui.pathlines = append(tui.pathlines, pll, plr)
 
-	sll := NewStatusline(LEFT, tui.getInstancePane, tui.inputHandler, appConfig.Display)
+	sll := NewStatusline(LEFT, tui.getInstancePane, tui.getInstanceGlobal, tui.inputHandler, appConfig.Display)
 	tll.SetFocusFunc(func() {
 		tui.selectedPane = LEFT
 	})
-	slr := NewStatusline(RIGHT, tui.getInstancePane, tui.inputHandler, appConfig.Display)
+	slr := NewStatusline(RIGHT, tui.getInstancePane, tui.getInstanceGlobal, tui.inputHandler, appConfig.Display)
 	tlr.SetFocusFunc(func() {
 		tui.selectedPane = RIGHT
 	})
@@ -164,6 +164,10 @@ func (t *Tui) StartApp() {
 
 func (t *Tui) getInstanceIndex(index int) *Instance {
 	return t.instances.GetInstance(index)
+}
+
+func (t *Tui) getInstanceGlobal() *Instance {
+	return t.instances.instances[t.selectedPane]
 }
 
 func (t *Tui) getInstancePane(view UiPane) *Instance {

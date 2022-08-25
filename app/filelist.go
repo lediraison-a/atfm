@@ -95,7 +95,7 @@ func (m *Filelist) Draw(screen tcell.Screen) {
 			Foreground(m.displayConfig.Theme.Text_light).
 			Background(m.displayConfig.Theme.Background_default).
 			PaddingRight(1)
-		return infoTextStyle.Render(RenderFileInfo(item, m.displayConfig))
+		return infoTextStyle.Render(RenderFileInfo(item, m.displayConfig.FileInfoFormat, m.displayConfig))
 	}
 
 	if itemCount == 0 {

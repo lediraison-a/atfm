@@ -1,5 +1,7 @@
 package config
 
+import "atfm/app/style"
+
 type Config struct {
 	Start         StartConfig
 	Display       DisplayConfig
@@ -36,10 +38,13 @@ type DisplayConfig struct {
 	Theme          ThemeConfig
 	DateFormat     string
 	FileInfoFormat []string
+	FileInfoExtendedFormat []string
 	InfoSeparator  string
+    StatusLineElements []StatusLineElement
 }
 
 func NewConfigDefault() *Config {
+    defaultTheme := NewThemeDefault()
 	c := Config{
 		Start: StartConfig{
 			StartDir:      "/home/alban",
@@ -53,10 +58,29 @@ func NewConfigDefault() *Config {
 			DynamicTabSize: true,
 			ShowTabTitle:   true,
 			ShowTabNumber:  true,
-			Theme:          NewThemeDefault(),
+			Theme:          defaultTheme,
 			DateFormat:     "Jan _2 15:04:05",
 			FileInfoFormat: []string{"~> {symlink}", "{size}", "{date}"},
+			FileInfoExtendedFormat: []string{"{name}", "~> {symlink}", "{mod}", "{size}", "{date}"},
 			InfoSeparator:  " • ",
+            StatusLineElements: []StatusLineElement{
+                {
+                	Style:     *style.NewStyle().
+                        Background(defaultTheme.Background_primary).
+                        Foreground(defaultTheme.Text_default).
+                        Padding(1),
+                	Name:      "INDEX",
+                	Alignment: style.ALIGN_RIGHT,
+                },
+                {
+                	Style:     *style.NewStyle().
+                        Background(defaultTheme.Background_default).
+                        Foreground(defaultTheme.Text_light).
+                        Padding(1),
+                	Name:      "FILEINFO",
+                	Alignment: style.ALIGN_LEFT,
+                },
+            },
 		},
 		Preview: PreviewConfig{
 			FilePreviewer:       "pistol",
