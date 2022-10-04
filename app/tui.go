@@ -301,7 +301,10 @@ func (t *Tui) GetAppCommands() []*cobra.Command {
 		Use:  "tabnew",
 		Args: cobra.ExactArgs(0),
 		Run: func(_ *cobra.Command, _ []string) {
-			t.NewInstance(t.appConfig.Start.StartDir, t.appConfig.Start.StartBasepath, models.LOCALFM, true)
+            err := t.NewInstance(t.appConfig.Start.StartDir, t.appConfig.Start.StartBasepath, models.LOCALFM, true)
+            if err != nil {
+                t.inputLine.LogError(err.Error())
+            }
 		},
 	}
 	tabclose := &cobra.Command{
@@ -384,7 +387,7 @@ func (t *Tui) GetAppCommands() []*cobra.Command {
 		Run: func(_ *cobra.Command, _ []string) {
 			ins := t.getInstancePane(t.selectedPane)
 			if err := ins.OpenAtIndex(ins.CurrentItem); err != nil {
-
+                t.inputLine.LogError(err.Error())
 			}
 		},
 	}
@@ -395,7 +398,7 @@ func (t *Tui) GetAppCommands() []*cobra.Command {
 			ins := t.getInstancePane(t.selectedPane)
 			pd, pbp, pm := ins.GetParentInfo()
 			if err := ins.OpenDirSaveHistory(pd, pbp, pm); err != nil {
-
+                t.inputLine.LogError(err.Error())
 			}
 		},
 	}
@@ -406,7 +409,7 @@ func (t *Tui) GetAppCommands() []*cobra.Command {
 			ins := t.getInstancePane(t.selectedPane)
 			ok, err := ins.OpenHistoryDir(models.HISTORY_BACK)
 			if ok && err != nil {
-
+                t.inputLine.LogError(err.Error())
 			}
 		},
 	}
@@ -417,7 +420,7 @@ func (t *Tui) GetAppCommands() []*cobra.Command {
 			ins := t.getInstancePane(t.selectedPane)
 			ok, err := ins.OpenHistoryDir(models.HISTORY_FORWARD)
 			if ok && err != nil {
-
+                t.inputLine.LogError(err.Error())
 			}
 		},
 	}

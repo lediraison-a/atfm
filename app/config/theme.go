@@ -8,6 +8,8 @@ type ThemeConfig struct {
 	Text_default         string
 	Text_light           string
 	Text_primary         string
+	Text_warning         string
+	Text_error           string
 }
 
 func NewThemeDefault() ThemeConfig {
@@ -19,5 +21,7 @@ func NewThemeDefault() ThemeConfig {
 		Text_default:         "#c9d1d9",
 		Text_light:           "#8b949e",
 		Text_primary:         "#73b7f2",
+		Text_warning:         "#ffa348",
+		Text_error:           "#ed333b",
 	}
 }

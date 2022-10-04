@@ -68,12 +68,34 @@ func (m *InputLine) MouseHandler() func(action tview.MouseAction, event *tcell.E
 	})
 }
 
+func (m *InputLine) LogInfo(text string) {
+	m.SetFieldTextColor(style.GetColorWeb(m.appConfig.Display.Theme.Text_default))
+	m.log(text)
+}
+
+func (m *InputLine) LogError(text string) {
+	m.SetFieldTextColor(style.GetColorWeb(m.appConfig.Display.Theme.Text_error))
+	m.log(text)
+}
+
+func (m *InputLine) LogWarn(text string) {
+	m.SetFieldTextColor(style.GetColorWeb(m.appConfig.Display.Theme.Text_warning))
+	m.log(text)
+}
+
+func (m *InputLine) log(text string) {
+	m.SetText(text)
+}
+
 func (m *InputLine) OpenCommandLine() {
+	m.SetFieldTextColor(style.GetColorWeb(m.appConfig.Display.Theme.Text_default))
+	m.SetText("")
 	m.source = COMMAND_LINE
 	m.SetLabel(":")
 }
 
 func (m *InputLine) OpenSearchLine() {
+	m.SetFieldTextColor(style.GetColorWeb(m.appConfig.Display.Theme.Text_default))
 	m.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if m.appConfig.IncSearch && event.Key() == tcell.KeyRune {
 			ins := m.getInstance()
@@ -82,6 +104,7 @@ func (m *InputLine) OpenSearchLine() {
 		}
 		return event
 	})
+	m.SetText("")
 	m.source = SEARCH_LINE
 	m.SetLabel("/")
 }

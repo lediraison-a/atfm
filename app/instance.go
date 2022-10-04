@@ -84,7 +84,8 @@ func (s *Instance) OpenDir(path, basepath string, mod models.FsMod) error {
 		basepath = path
 		path = "/"
 		mod = models.ZIPFM
-	} else if strings.HasSuffix(path, ".tar.gz") {
+	} else if strings.HasSuffix(path, ".tar.gz") ||
+		strings.HasSuffix(path, ".tar.xz") {
 		basepath = path
 		path = "/"
 		mod = models.TARFM
