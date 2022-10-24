@@ -108,3 +108,7 @@ func (m *InputLine) OpenSearchLine() {
 	m.source = SEARCH_LINE
 	m.SetLabel("/")
 }
+
+func (m *InputLine) OpenInput(label string) {
+	m.SetLabel(label)
+}
