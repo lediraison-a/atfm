@@ -63,18 +63,16 @@ func NewConfigDefault() *Config {
 			InfoSeparator:          " • ",
 			StatusLineElements: []StatusLineElement{
 				{
-					Style: *style.NewStyle().
+					Highlight: *style.NewHighlight().
 						Background(defaultTheme.Background_primary).
-						Foreground(defaultTheme.Text_default).
-						Padding(1),
+						Foreground(defaultTheme.Text_default),
 					Name:      "INDEX",
 					Alignment: style.ALIGN_RIGHT,
 				},
 				{
-					Style: *style.NewStyle().
+					Highlight: *style.NewHighlight().
 						Background(defaultTheme.Background_default).
-						Foreground(defaultTheme.Text_light).
-						Padding(1),
+						Foreground(defaultTheme.Text_light),
 					Name:      "FILEINFO",
 					Alignment: style.ALIGN_LEFT,
 				},

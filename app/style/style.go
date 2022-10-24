@@ -14,8 +14,9 @@ const (
 )
 
 type Style struct {
-	background, foreground    string
-	bold, underline, italic   bool
+	// background, foreground    string
+	// bold, underline, italic   bool
+	highlight                 *Highlight
 	paddingLeft, paddingRight int
 	paddingRune               rune
 	minWidth, maxWidth        int
@@ -24,11 +25,7 @@ type Style struct {
 
 func NewStyle() *Style {
 	return &Style{
-		background:   "-",
-		foreground:   "-",
-		bold:         false,
-		underline:    false,
-		italic:       false,
+		highlight:    NewHighlight(),
 		paddingLeft:  0,
 		paddingRight: 0,
 		paddingRune:  ' ',
@@ -69,16 +66,16 @@ func (s *Style) Render(text string) string {
 	}
 
 	decoration := ":"
-	if s.bold {
+	if s.highlight.bold {
 		decoration += "b"
 	}
-	if s.underline {
+	if s.highlight.underline {
 		decoration += "u"
 	}
-	if s.italic {
+	if s.highlight.italic {
 		decoration += "i"
 	}
-	if !s.bold && !s.italic && !s.underline {
+	if !s.highlight.bold && !s.highlight.italic && !s.highlight.underline {
 		decoration += "-"
 	}
 
@@ -91,32 +88,37 @@ func (s *Style) Render(text string) string {
 	pc := string(s.paddingRune)
 	ptext := strings.Repeat(pc, s.paddingLeft) + StripAllTag(text) + strings.Repeat(pc, s.paddingRight)
 
-	style := fmt.Sprintf("[%s:%s%s]", s.foreground, s.background, decoration)
+	style := fmt.Sprintf("[%s:%s%s]", s.highlight.foreground, s.highlight.background, decoration)
 	return style + ptext + "[-:-:-]"
 }
 
+func (s *Style) Highlight(highlight Highlight) *Style {
+	s.highlight = &highlight
+	return s
+}
+
 func (s *Style) Background(color string) *Style {
-	s.background = color
+	s.highlight.background = color
 	return s
 }
 
 func (s *Style) Foreground(color string) *Style {
-	s.foreground = color
+	s.highlight.foreground = color
 	return s
 }
 
 func (s *Style) Bold(is bool) *Style {
-	s.bold = is
+	s.highlight.bold = is
 	return s
 }
 
 func (s *Style) Underline(is bool) *Style {
-	s.underline = is
+	s.highlight.underline = is
 	return s
 }
 
 func (s *Style) Italic(is bool) *Style {
-	s.italic = is
+	s.highlight.italic = is
 	return s
 }
 

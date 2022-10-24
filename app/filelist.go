@@ -92,7 +92,10 @@ func (m *Filelist) Draw(screen tcell.Screen) {
 		return iconText + lineMainTextStyle.Render(t)
 	}
 
-	printInfoText := func(item models.FileInfo, _ int) string {
+	printInfoText := func(item models.FileInfo, index int) string {
+		if ins.CanShowOpenParent() && index == 0 {
+			return ""
+		}
 		infoTextStyle := style.NewStyle().
 			Foreground(m.displayConfig.Theme.Text_light).
 			Background(m.displayConfig.Theme.Background_default).
