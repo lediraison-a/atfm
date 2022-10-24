@@ -19,7 +19,7 @@ func main() {
 	//  	panic(err)
 	// }
 	// instances := app.NewInstancePool(client.RpcClient)
-	instances := app.NewInstancePool(nil, config.Start)
+	instances := app.NewInstancePool(nil, config)
 	tui := app.NewTui(instances, config)
 	or := func(path string, content []models.FileInfo, selfDelete bool) error {
 		tui.RefreshInstances(path, content, selfDelete)
@@ -28,7 +28,7 @@ func main() {
 	app.FileManagerService = server.NewFileManager()
 	app.NotifyManagerService = server.NewNotifyManager(app.FileManagerService, or)
 
-	err := tui.NewInstance(config.Start.StartDir, config.Start.StartBasepath, models.LOCALFM, true)
+	err := tui.NewInstance(config.StartDir, config.StartBasepath, models.LOCALFM, true)
 	if err != nil {
 		panic(err)
 	}

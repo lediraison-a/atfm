@@ -89,7 +89,7 @@ func getCommandsTabs(t *Tui) []*cobra.Command {
 		Use:  "tabnew",
 		Args: cobra.ExactArgs(0),
 		Run: func(_ *cobra.Command, _ []string) {
-			err := t.NewInstance(t.appConfig.Start.StartDir, t.appConfig.Start.StartBasepath, models.LOCALFM, true)
+			err := t.NewInstance(t.appConfig.StartDir, t.appConfig.StartBasepath, models.LOCALFM, true)
 			if err != nil {
 				t.inputLine.LogError(err.Error())
 			}

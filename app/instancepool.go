@@ -11,24 +11,24 @@ type InstancePool struct {
 
 	rpcClient *rpc.Client
 
-	startConfig config.StartConfig
+	config *config.Config
 }
 
-func NewInstancePool(client *rpc.Client, startConfig config.StartConfig) *InstancePool {
+func NewInstancePool(client *rpc.Client, config *config.Config) *InstancePool {
 	return &InstancePool{
-		instances:   []*Instance{},
-		rpcClient:   client,
-		startConfig: startConfig,
+		instances: []*Instance{},
+		rpcClient: client,
+		config:    config,
 	}
 }
 
 func (p InstancePool) AddInstanceDefault() (*Instance, int, error) {
-	return p.AddInstance(p.startConfig.StartDir, p.startConfig.StartBasepath, models.LOCALFM)
+	return p.AddInstance(p.config.StartDir, p.config.StartBasepath, models.LOCALFM)
 }
 
 func (p *InstancePool) AddInstance(openPath, basePath string, mod models.FsMod) (*Instance, int, error) {
 	id := len(p.instances)
-	ins := NewInstance(mod, openPath, basePath, id)
+	ins := NewInstance(mod, openPath, basePath, id, p.config.Display.ShowOpenParent)
 	ins.rpcClient = p.rpcClient
 	err := ins.OpenDir(openPath, basePath, mod)
 	if err != nil {
@@ -48,7 +48,7 @@ func (p *InstancePool) RefreshInstances(path string, content []models.FileInfo, 
 			continue
 		}
 		if selfDelete {
-			err := v.OpenDir(p.startConfig.StartDir, p.startConfig.StartBasepath, models.LOCALFM)
+			err := v.OpenDir(p.config.StartDir, p.config.StartBasepath, models.LOCALFM)
 			if err != nil {
 				return
 			}

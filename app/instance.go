@@ -1,15 +1,18 @@
 package app
 
 import (
+	"atfm/app/config"
 	"atfm/app/models"
 	"atfm/app/server"
 	"atfm/app/sort"
 	"atfm/generics"
 	"errors"
 	"net/rpc"
+	"os"
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 var FileManagerService *server.FileManager
@@ -39,9 +42,11 @@ type Instance struct {
 	CurrentItem int
 
 	QuickSearch *Search
+
+	config *config.Config
 }
 
-func NewInstance(mod models.FsMod, path, basePath string, id int) *Instance {
+func NewInstance(mod models.FsMod, path, basePath string, id int, showOpenParent bool) *Instance {
 	return &Instance{
 		Id:              id,
 		History:         models.NewNavHistory(),
@@ -55,6 +60,7 @@ func NewInstance(mod models.FsMod, path, basePath string, id int) *Instance {
 		CurrentItem:     0,
 		BasePath:        basePath,
 		QuickSearch:     NewSearch(),
+		ShowOpenParent:  showOpenParent,
 	}
 }
 
@@ -80,6 +86,17 @@ func (s *Instance) OpenDirSaveHistory(path, basepath string, mod models.FsMod) e
 }
 
 func (s *Instance) OpenDir(path, basepath string, mod models.FsMod) error {
+	if path == "" || basepath == "" {
+		return nil
+	}
+	if path[0] == '$' {
+		pathEnv := os.Getenv(path[1:])
+		if pathEnv == "" {
+			return nil
+		}
+		path = pathEnv
+	}
+
 	if filepath.Ext(path) == ".zip" {
 		basepath = path
 		path = "/"
@@ -91,11 +108,18 @@ func (s *Instance) OpenDir(path, basepath string, mod models.FsMod) error {
 		mod = models.TARFM
 	}
 
+	if path == "/" && s.DirPath == "/" && (s.Mod == models.TARFM || s.Mod == models.ZIPFM) {
+		path = filepath.Dir(s.BasePath)
+		basepath = "/"
+		mod = models.LOCALFM
+	}
+
 	arg := models.FileArg{
 		Mod:      mod,
 		BasePath: basepath,
 		Path:     path,
 	}
+
 	var dc []models.FileInfo
 	// err := s.rpcClient.Call("FileManager.ReadDir", arg, &dc)
 	err := FileManagerService.ReadDir(arg, &dc)
@@ -236,6 +260,17 @@ func (s *Instance) GetShownContent(content []models.FileInfo) []models.FileInfo 
 		sdc = generics.Filter(sdc, func(v models.FileInfo, index int) bool {
 			return !strings.HasPrefix(v.Name, ".")
 		})
+	}
+	if s.CanShowOpenParent() {
+		parent := models.FileInfo{
+			Name:    "..",
+			IsDir:   true,
+			Mode:    0,
+			Size:    0,
+			ModTime: time.Time{},
+			Symlink: "",
+		}
+		sdc = append([]models.FileInfo{parent}, sdc...)
 	}
 	return sdc
 }

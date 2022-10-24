@@ -185,7 +185,7 @@ func (t *Tui) ToggleDoublePane() {
 		t.setAppGridSinglePane()
 	} else {
 		t.selectedPane = RIGHT
-		t.NewInstance(t.appConfig.Start.StartDir, t.appConfig.Start.StartBasepath, models.LOCALFM, true)
+		t.NewInstance(t.appConfig.StartDir, t.appConfig.StartBasepath, models.LOCALFM, true)
 		t.setAppGridDoublePane()
 	}
 	t.showDoublePane = !t.showDoublePane
