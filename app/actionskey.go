@@ -154,8 +154,8 @@ func (t *Tui) GetActionsKey(commands []*cobra.Command) []*KeyAction {
 		},
 	}
 
-	inputvalidate := KeyAction{
-		Name:   "inputvalidate",
+	validateinput := KeyAction{
+		Name:   "validateinput",
 		Source: "",
 		Action: func() {
 			onInput := t.inputLine.validateInputFunc
@@ -177,6 +177,6 @@ func (t *Tui) GetActionsKey(commands []*cobra.Command) []*KeyAction {
 		&cmdprevious,
 		&searchnext,
 		&searchprevious,
-		&inputvalidate,
+		&validateinput,
 	)
 }

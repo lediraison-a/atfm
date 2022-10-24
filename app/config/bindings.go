@@ -22,8 +22,8 @@ func NewKeyBindingsDefault() map[string]string {
 		"/":              "searchinput",
 		"n":              "searchjumpforward",
 		"N":              "searchjumpbackward",
-        "GG":             "scrolllast",
-        "gg":             "scrollfirst",
+		"GG":             "scrolllast",
+		"gg":             "scrollfirst",
 
 		"pager:<Esc>": "normalmod",
 		"pager:q":     "normalmod",
@@ -37,6 +37,9 @@ func NewKeyBindingsDefault() map[string]string {
 		"searchline:<Enter>": "searchrun",
 		"searchline:<Up>":    "searchprevious",
 		"searchline:<Down>":  "searchnext",
+
+		"inputline:<Esc>":   "normalmod",
+		"inputline:<Enter>": "validateinput",
 	}
 }
 
