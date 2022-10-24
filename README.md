@@ -11,6 +11,7 @@ executable with no dependencies needed.
 - sftp support
 - extensive customization
 - file preview
+- xdg trash support
 
 ## Installation
 

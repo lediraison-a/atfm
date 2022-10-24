@@ -161,11 +161,27 @@ func (s *Instance) RenameFile(filepath, newname string) error {
 		NewName:  newname,
 	}
 	var fi models.FileInfo
-	err := FileManagerService.RenameFile(arg, &fi)
-	if err != nil {
-		return err
+	return FileManagerService.RenameFile(arg, &fi)
+}
+
+func (s *Instance) NewFile(filepath string) error {
+	arg := models.FileArg{
+		Mod:      s.Mod,
+		BasePath: s.BasePath,
+		Path:     filepath,
 	}
-	return nil
+	var fi models.FileInfo
+	return FileManagerService.CreateFile(arg, &fi)
+}
+
+func (s Instance) NewDir(filepath string) error {
+	arg := models.FileArg{
+		Mod:      s.Mod,
+		BasePath: s.BasePath,
+		Path:     filepath,
+	}
+	var fi models.FileInfo
+	return FileManagerService.CreateDir(arg, &fi)
 }
 
 func (s *Instance) ReadDir(path, basepath string, mod models.FsMod) ([]models.FileInfo, error) {

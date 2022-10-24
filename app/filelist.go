@@ -103,7 +103,7 @@ func (m *Filelist) Draw(screen tcell.Screen) {
 		return infoTextStyle.Render(RenderFileInfo(item, m.displayConfig.FileInfoFormat, m.displayConfig))
 	}
 
-	if itemCount == 0 {
+	if itemCount == 0 || (ins.CanShowOpenParent() && itemCount == 1) {
 		infoTextStyle := style.NewStyle().
 			Foreground(m.displayConfig.Theme.Text_light).
 			Background(m.displayConfig.Theme.Background_default)
@@ -114,7 +114,6 @@ func (m *Filelist) Draw(screen tcell.Screen) {
 			t = " - Empty - "
 		}
 		tview.Print(screen, infoTextStyle.Render(t), x, y+(height/2), width, tview.AlignCenter, tcell.ColorDefault)
-		return
 	}
 
 	for i := y; i <= height+1; i++ {

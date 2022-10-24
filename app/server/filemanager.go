@@ -190,7 +190,7 @@ func (f *FileManager) CreateDir(arg models.FileArg, fileInfo *models.FileInfo) e
 	if err != nil {
 		return err
 	}
-	err = fs.Mkdir(arg.Path, 0777)
+	err = fs.Mkdir(arg.Path, 0775)
 	if err != nil {
 		return err
 	}

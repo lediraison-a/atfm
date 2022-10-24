@@ -167,8 +167,33 @@ func getCommandsFile(t *Tui) []*cobra.Command {
 		},
 	}
 
+	newfile := &cobra.Command{
+		Use:  "new",
+		Args: cobra.ExactArgs(0),
+		Run: func(_ *cobra.Command, _ []string) {
+			ins := t.getInstanceGlobal()
+			dirPath := ins.DirPath
+			onNew := func(newFileName string) (string, error) {
+				funcNew := ins.NewFile
+				if len(newFileName) > 0 && newFileName[len(newFileName)-1] == '/' {
+					funcNew = ins.NewDir
+				}
+				newFilePath := path.Join(dirPath, newFileName)
+				if len(newFileName) > 0 && newFileName[0] == '/' {
+					newFilePath = newFileName
+				}
+				logInfo := newFilePath + " created"
+				return logInfo, funcNew(newFilePath)
+			}
+			label := "new file (end with / to make a directory) > "
+			t.app.SetFocus(t.inputLine)
+			t.inputLine.OpenInput(label, "", onNew)
+		},
+	}
+
 	return []*cobra.Command{
 		rename,
+		newfile,
 	}
 }
 
