@@ -150,13 +150,16 @@ func getCommandsFile(t *Tui) []*cobra.Command {
 		Args: cobra.ExactArgs(0),
 		Run: func(_ *cobra.Command, _ []string) {
 			ins := t.getInstanceGlobal()
+			dirPath := ins.DirPath
 			filename := ins.ShownContent[ins.CurrentItem].Name
-			filepath := path.Join(ins.DirPath, filename)
-			onRename := func(newName string) {
-				err := ins.RenameFile(filepath, newName)
-				if err != nil {
-					t.inputLine.LogError(err.Error())
+			filepath := path.Join(dirPath, filename)
+			onRename := func(newName string) (string, error) {
+				newNamePath := path.Join(dirPath, newName)
+				if len(newName) > 0 && newName[0] == '/' {
+					newNamePath = newName
 				}
+				logInfo := filepath + " renamed to " + newNamePath
+				return logInfo, ins.RenameFile(filepath, newNamePath)
 			}
 			label := "rename " + filename + " > "
 			t.app.SetFocus(t.inputLine)

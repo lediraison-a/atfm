@@ -24,6 +24,7 @@ func NewKeyBindingsDefault() map[string]string {
 		"N":              "searchjumpbackward",
 		"GG":             "scrolllast",
 		"gg":             "scrollfirst",
+		"filelist:rn":    "rename",
 
 		"pager:<Esc>": "normalmod",
 		"pager:q":     "normalmod",

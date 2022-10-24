@@ -15,6 +15,7 @@ type CommandManager struct {
 	CmdOut             *bytes.Buffer
 	CmdHistory         []string
 	selectedCmdHistory int
+	shell              string
 }
 
 func NewCommandManager() *CommandManager {
@@ -26,6 +27,7 @@ func NewCommandManager() *CommandManager {
 		CmdOut:             bout,
 		CmdHistory:         []string{},
 		selectedCmdHistory: 0,
+		shell:              "sh",
 	}
 }
 
@@ -47,7 +49,7 @@ func (c *CommandManager) RunCommandShell(command, workdir string, mod models.FsM
 	c.selectedCmdHistory = len(c.CmdHistory)
 	c.SetCurrentWorkingDir(workdir, mod)
 	co := strings.Split(command, " ")
-	cmd := exec.Command(co[0], co[1:]...)
+	cmd := exec.Command(c.shell, co[0:]...)
 	c.CmdOut.Reset()
 	cmd.Stdout = c.CmdOut
 	cmd.Stderr = c.CmdOut

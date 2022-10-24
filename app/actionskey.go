@@ -136,6 +136,7 @@ func (t *Tui) GetActionsKey(commands []*cobra.Command) []*KeyAction {
 			if command == "" {
 				return
 			}
+			t.app.SetFocus(t.filelists[t.selectedPane])
 			if command[0] == '!' {
 				t.cmdManager.RunCommandShell(command[1:], ins.DirPath, ins.Mod)
 			} else {
@@ -148,8 +149,6 @@ func (t *Tui) GetActionsKey(commands []*cobra.Command) []*KeyAction {
 				x, y, width, height := t.layers.GetRect()
 				t.pager.SetRect(x, y+(height-nblines), width, nblines+1)
 				t.layers.ShowPage("pager")
-			} else {
-				t.app.SetFocus(t.filelists[t.selectedPane])
 			}
 		},
 	}
@@ -160,7 +159,14 @@ func (t *Tui) GetActionsKey(commands []*cobra.Command) []*KeyAction {
 		Action: func() {
 			onInput := t.inputLine.validateInputFunc
 			if onInput != nil {
-				onInput(t.inputLine.GetText())
+				log, err := onInput(t.inputLine.GetText())
+				t.inputLine.validateInputFunc = nil
+				t.app.SetFocus(t.filelists[t.selectedPane])
+				if err != nil {
+					t.inputLine.LogError(err.Error())
+					return
+				}
+				t.inputLine.LogInfo(log)
 			}
 		},
 	}

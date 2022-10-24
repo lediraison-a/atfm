@@ -27,7 +27,7 @@ type InputLine struct {
 
 	source InputLineSource
 
-	validateInputFunc func(string)
+	validateInputFunc func(string) (string, error)
 }
 
 func NewInputLine(inputHandler *InputHandler, getInstance func() *Instance, appConfig config.Config) *InputLine {
@@ -88,6 +88,7 @@ func (m *InputLine) LogWarn(text string) {
 }
 
 func (m *InputLine) log(text string) {
+	m.SetLabel("")
 	m.SetText(text)
 }
 
@@ -113,7 +114,8 @@ func (m *InputLine) OpenSearchLine() {
 	m.SetLabel("/")
 }
 
-func (m *InputLine) OpenInput(label, initialValue string, validateInputFunc func(string)) {
+func (m *InputLine) OpenInput(label, initialValue string, validateInputFunc func(string) (string, error)) {
+	m.SetFieldTextColor(style.GetColorWeb(m.appConfig.Display.Theme.Text_default))
 	m.SetLabel(label)
 	m.SetText(initialValue)
 	m.validateInputFunc = validateInputFunc
