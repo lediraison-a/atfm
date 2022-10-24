@@ -129,6 +129,21 @@ func (s *Instance) OpenDir(path, basepath string, mod models.FsMod) error {
 	return nil
 }
 
+func (s *Instance) RenameFile(filepath, newname string) error {
+	arg := models.FileRenameArg{
+		Mod:      s.Mod,
+		BasePath: s.BasePath,
+		Path:     filepath,
+		NewName:  newname,
+	}
+	var fi models.FileInfo
+	err := FileManagerService.RenameFile(arg, &fi)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *Instance) ReadDir(path, basepath string, mod models.FsMod) ([]models.FileInfo, error) {
 	arg := models.FileArg{
 		Mod:      mod,

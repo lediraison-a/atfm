@@ -13,6 +13,7 @@ type InputLineSource string
 const (
 	COMMAND_LINE InputLineSource = "commandline"
 	SEARCH_LINE  InputLineSource = "searchline"
+	INPUT_LINE   InputLineSource = "inputline"
 )
 
 type InputLine struct {
@@ -25,6 +26,8 @@ type InputLine struct {
 	getInstance func() *Instance
 
 	source InputLineSource
+
+	validateInputFunc func(string)
 }
 
 func NewInputLine(inputHandler *InputHandler, getInstance func() *Instance, appConfig config.Config) *InputLine {
@@ -35,11 +38,12 @@ func NewInputLine(inputHandler *InputHandler, getInstance func() *Instance, appC
 	ifst = ifst.Italic(true)
 	inputField.SetFieldStyle(ifst)
 	cl := InputLine{
-		InputField:   inputField,
-		appConfig:    appConfig,
-		inputHandler: inputHandler,
-		source:       COMMAND_LINE,
-		getInstance:  getInstance,
+		InputField:        inputField,
+		appConfig:         appConfig,
+		inputHandler:      inputHandler,
+		source:            COMMAND_LINE,
+		getInstance:       getInstance,
+		validateInputFunc: nil,
 	}
 	cl.SetBlurFunc(func() {
 		cl.SetText("")
@@ -109,6 +113,9 @@ func (m *InputLine) OpenSearchLine() {
 	m.SetLabel("/")
 }
 
-func (m *InputLine) OpenInput(label string) {
+func (m *InputLine) OpenInput(label, initialValue string, validateInputFunc func(string)) {
 	m.SetLabel(label)
+	m.SetText(initialValue)
+	m.validateInputFunc = validateInputFunc
+	m.source = INPUT_LINE
 }

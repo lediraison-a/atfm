@@ -60,7 +60,7 @@ func RenderFileInfo(item models.FileInfo, fileInfoFormat []string, conf config.D
 			continue
 		}
 		t += vt
-		if i != len(conf.FileInfoFormat)-1 {
+		if i != len(fileInfoFormat)-1 {
 			t += conf.InfoSeparator
 		}
 	}

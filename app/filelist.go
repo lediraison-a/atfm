@@ -59,7 +59,7 @@ func (m *Filelist) Draw(screen tcell.Screen) {
 	}
 	itemCount := len(ins.ShownContent)
 
-	printMainText := func(item models.FileInfo, index int) string {
+	printMainText := func(item models.FileInfo, index, maxlen int) string {
 		bg := m.displayConfig.Theme.Background_default
 		ic, icol, t := "", "", ""
 		if m.displayConfig.ShowIcons {
@@ -83,18 +83,20 @@ func (m *Filelist) Draw(screen tcell.Screen) {
 			Foreground(icol).
 			Background(bg).
 			Padding(1)
+		iconText := iconStyle.Render(ic)
 		lineMainTextStyle := style.NewStyle().
 			Foreground(m.displayConfig.Theme.Text_default).
 			Background(bg).
-			PaddingRight(1)
-		return iconStyle.Render(ic) + lineMainTextStyle.Render(t)
+			PaddingRight(1).MaxWidth(maxlen - tview.TaggedStringWidth(iconText) - 1)
+
+		return iconText + lineMainTextStyle.Render(t)
 	}
 
 	printInfoText := func(item models.FileInfo, _ int) string {
 		infoTextStyle := style.NewStyle().
 			Foreground(m.displayConfig.Theme.Text_light).
 			Background(m.displayConfig.Theme.Background_default).
-			PaddingRight(1)
+			Padding(1)
 		return infoTextStyle.Render(RenderFileInfo(item, m.displayConfig.FileInfoFormat, m.displayConfig))
 	}
 
@@ -120,8 +122,10 @@ func (m *Filelist) Draw(screen tcell.Screen) {
 			continue
 		}
 		fi := ins.ShownContent[cIndex]
-		tview.Print(screen, printInfoText(fi, cIndex), x, i, width, tview.AlignRight, tcell.ColorDefault)
-		tview.Print(screen, printMainText(fi, cIndex), x, i, width, tview.AlignLeft, tcell.ColorDefault)
+		infoText := printInfoText(fi, cIndex)
+		maxLen := width - tview.TaggedStringWidth(infoText)
+		tview.Print(screen, infoText, x, i, width, tview.AlignRight, tcell.ColorDefault)
+		tview.Print(screen, printMainText(fi, cIndex, maxLen), x, i, width, tview.AlignLeft, tcell.ColorDefault)
 	}
 }
 

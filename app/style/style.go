@@ -84,7 +84,7 @@ func (s *Style) Render(text string) string {
 
 	if s.minWidth != -1 && len(text) < (s.minWidth-(s.paddingRight+s.paddingLeft)) {
 		text = resizeText(text, s.minWidth)
-	} else if s.maxWidth != -1 && len(text) > (s.minWidth-(s.paddingRight+s.paddingLeft)) {
+	} else if s.maxWidth != -1 && len(text) > (s.maxWidth-(s.paddingRight+s.paddingLeft)) {
 		text = shrinkText(text, s.maxWidth)
 	}
 
