@@ -174,7 +174,7 @@ func (s *Instance) NewFile(filepath string) error {
 	return FileManagerService.CreateFile(arg, &fi)
 }
 
-func (s Instance) NewDir(filepath string) error {
+func (s *Instance) NewDir(filepath string) error {
 	arg := models.FileArg{
 		Mod:      s.Mod,
 		BasePath: s.BasePath,
@@ -182,6 +182,26 @@ func (s Instance) NewDir(filepath string) error {
 	}
 	var fi models.FileInfo
 	return FileManagerService.CreateDir(arg, &fi)
+}
+
+func (s *Instance) ExtractFile(source, destination string) error {
+	arg := models.ExtractArg{
+		Source:      source,
+		Destination: destination,
+		Mod:         s.Mod,
+		BasePath:    s.BasePath,
+	}
+	return FileManagerService.ExtractZip(arg)
+}
+
+func (s *Instance) CompressFile(sources []string, destination string) error {
+	arg := models.CompressArg{
+		Sources:     sources,
+		Destination: destination,
+		Mod:         s.Mod,
+		BasePath:    s.BasePath,
+	}
+	return FileManagerService.CompressZip(arg)
 }
 
 func (s *Instance) ReadDir(path, basepath string, mod models.FsMod) ([]models.FileInfo, error) {

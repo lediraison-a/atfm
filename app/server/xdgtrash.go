@@ -36,7 +36,7 @@ func NewXDGTrashManager(trashDir string, fileManager *FileManager) (*XDGTrashMan
 		return nil, err
 	}
 	if !fpEx || !ipEx {
-		return nil, errors.New("xdg trash directories doesn't exists")
+		return nil, errors.New("xdg trash directories don't exists")
 	}
 
 	return &XDGTrashManager{

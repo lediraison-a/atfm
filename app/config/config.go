@@ -42,6 +42,7 @@ type DisplayConfig struct {
 	FileInfoFormat         []string
 	FileInfoExtendedFormat []string
 	InfoSeparator          string
+	InfoExtendedSeparator  string
 	StatusLineElements     []StatusLineElement
 }
 
@@ -60,7 +61,8 @@ func NewConfigDefault() *Config {
 			DateFormat:             "Jan _2 15:04",
 			FileInfoFormat:         []string{"~> {symlink}", "{size}", "{date}"},
 			FileInfoExtendedFormat: []string{"{name}", "~> {symlink}", "{mod}", "{size}", "{date}"},
-			InfoSeparator:          " • ",
+			InfoSeparator:          " │ ",
+			InfoExtendedSeparator:  " • ",
 			StatusLineElements: []StatusLineElement{
 				{
 					Highlight: *style.NewHighlight().

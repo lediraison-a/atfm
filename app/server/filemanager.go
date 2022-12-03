@@ -307,3 +307,24 @@ func (f *FileManager) readSimlink(name string, fs afero.Fs, mod models.FsMod, in
 
 	return t
 }
+
+func (f *FileManager) ExtractZip(arg models.ExtractArg) error {
+	fs, err := f.getFs(arg.BasePath, arg.Mod)
+	if err != nil {
+		return err
+	}
+	return ExtractZip(arg.Source, arg.Destination, fs)
+}
+
+func (f *FileManager) CompressZip(arg models.CompressArg) error {
+	fs, err := f.getFs(arg.BasePath, arg.Mod)
+	if err != nil {
+		return err
+	}
+	return CompressZip(arg.Sources, arg.Destination, true, fs)
+}
+
+func (f *FileManager) ExtractGzip() error {
+
+	return nil
+}

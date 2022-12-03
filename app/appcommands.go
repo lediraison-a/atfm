@@ -2,7 +2,9 @@ package app
 
 import (
 	"atfm/app/models"
+	"atfm/generics"
 	"path"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -191,9 +193,59 @@ func getCommandsFile(t *Tui) []*cobra.Command {
 		},
 	}
 
+	extractcurrent := &cobra.Command{
+		Use:  "extractcurrent",
+		Args: cobra.ExactArgs(0),
+		Run: func(_ *cobra.Command, _ []string) {
+			ins := t.getInstanceGlobal()
+			filename := ins.ShownContent[ins.CurrentItem].Name
+			dirPath := ins.DirPath
+			onExtract := func(destination string) (string, error) {
+				if !path.IsAbs(destination) {
+					destination = path.Join(dirPath, destination)
+				}
+				source := path.Join(dirPath, filename)
+				logInfo := filename + " extracted to " + destination
+				return logInfo, ins.ExtractFile(source, destination)
+
+			}
+			label := "extract " + filename + " to > "
+			t.app.SetFocus(t.inputLine)
+			t.inputLine.OpenInput(label, "./", onExtract)
+		},
+	}
+
+	compressselected := &cobra.Command{
+		Use:  "compressselected",
+		Args: cobra.ExactArgs(0),
+		Run: func(_ *cobra.Command, _ []string) {
+			ins := t.getInstanceGlobal()
+			filename := strings.Replace(ins.ShownContent[ins.CurrentItem].Name, ".", "_", -1) + ".zip"
+			if len(ins.SelectedIndexes) > 0 {
+				filename = "archive.zip"
+			}
+			sources := generics.Map(ins.SelectedIndexes, func(value int, _ int) string {
+				return path.Join(ins.DirPath, ins.ShownContent[value].Name)
+			})
+			dirPath := ins.DirPath
+			onCompress := func(destination string) (string, error) {
+				if !path.IsAbs(destination) {
+					destination = path.Join(dirPath, destination)
+				}
+				logInfo := filename + " compressed to " + destination
+				return logInfo, ins.CompressFile(sources, destination)
+			}
+			label := "compress " + filename + " to > "
+			t.app.SetFocus(t.inputLine)
+			t.inputLine.OpenInput(label, "./"+filename, onCompress)
+		},
+	}
+
 	return []*cobra.Command{
 		rename,
 		newfile,
+		extractcurrent,
+		compressselected,
 	}
 }
 

@@ -21,6 +21,7 @@ func main() {
 	// instances := app.NewInstancePool(client.RpcClient)
 	instances := app.NewInstancePool(nil, config)
 	tui := app.NewTui(instances, config)
+
 	or := func(path string, content []models.FileInfo, selfDelete bool) error {
 		tui.RefreshInstances(path, content, selfDelete)
 		return nil
