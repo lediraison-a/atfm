@@ -220,20 +220,28 @@ func getCommandsFile(t *Tui) []*cobra.Command {
 		Args: cobra.ExactArgs(0),
 		Run: func(_ *cobra.Command, _ []string) {
 			ins := t.getInstanceGlobal()
-			filename := strings.Replace(ins.ShownContent[ins.CurrentItem].Name, ".", "_", -1) + ".zip"
+			var sources []string
+			var filename string
 			if len(ins.SelectedIndexes) > 0 {
 				filename = "archive.zip"
+				sources = generics.Map(ins.SelectedIndexes, func(value int, _ int) string {
+					return path.Join(ins.DirPath, ins.ShownContent[value].Name)
+				})
+			} else {
+				filename = strings.ReplaceAll(ins.ShownContent[ins.CurrentItem].Name, ".", "_") + ".zip"
+				sources = append(sources, path.Join(ins.DirPath, ins.ShownContent[ins.CurrentItem].Name))
 			}
-			sources := generics.Map(ins.SelectedIndexes, func(value int, _ int) string {
-				return path.Join(ins.DirPath, ins.ShownContent[value].Name)
-			})
 			dirPath := ins.DirPath
 			onCompress := func(destination string) (string, error) {
 				if !path.IsAbs(destination) {
 					destination = path.Join(dirPath, destination)
 				}
 				logInfo := filename + " compressed to " + destination
-				return logInfo, ins.CompressFile(sources, destination)
+				err := ins.CompressFile(sources, destination)
+				if err != nil {
+					ins.SelectedIndexes = []int{}
+				}
+				return logInfo, err
 			}
 			label := "compress " + filename + " to > "
 			t.app.SetFocus(t.inputLine)

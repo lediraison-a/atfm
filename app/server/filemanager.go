@@ -313,7 +313,7 @@ func (f *FileManager) ExtractZip(arg models.ExtractArg) error {
 	if err != nil {
 		return err
 	}
-	return ExtractZip(arg.Source, arg.Destination, fs)
+	return ExtractZip(arg.Source, arg.Destination, fs, models.FILE_SKIP)
 }
 
 func (f *FileManager) CompressZip(arg models.CompressArg) error {

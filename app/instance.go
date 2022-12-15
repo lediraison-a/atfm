@@ -186,10 +186,11 @@ func (s *Instance) NewDir(filepath string) error {
 
 func (s *Instance) ExtractFile(source, destination string) error {
 	arg := models.ExtractArg{
-		Source:      source,
-		Destination: destination,
-		Mod:         s.Mod,
-		BasePath:    s.BasePath,
+		Source:            source,
+		Destination:       destination,
+		Mod:               s.Mod,
+		BasePath:          s.BasePath,
+		OnFileExistAction: models.OPERATION_CANCEL,
 	}
 	return FileManagerService.ExtractZip(arg)
 }

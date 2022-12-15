@@ -2,16 +2,18 @@ package server
 
 import (
 	"archive/zip"
-	"github.com/spf13/afero"
+	"atfm/app/models"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/spf13/afero"
 )
 
 // https://gist.github.com/yhirose/addb8d248825d373095c
 
-func ExtractZip(source, destination string, destFs afero.Fs) error {
+func ExtractZip(source, destination string, destFs afero.Fs, onFileExist models.FileExistAction) error {
 	reader, err := zip.OpenReader(source)
 	if err != nil {
 		return err
@@ -24,6 +26,21 @@ func ExtractZip(source, destination string, destFs afero.Fs) error {
 
 	for _, file := range reader.File {
 		path := filepath.Join(destination, file.Name)
+		var exist bool
+		exist, err = afero.Exists(destFs, path)
+		if err != nil {
+			return err
+		}
+		if exist {
+			switch onFileExist {
+			case models.OPERATION_CANCEL:
+				return nil
+			case models.FILE_SKIP:
+				continue
+			case models.FILE_REPLACE:
+			}
+		}
+
 		if file.FileInfo().IsDir() {
 			err := destFs.MkdirAll(path, file.Mode())
 			if err != nil {
