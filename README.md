@@ -1,3 +1,7 @@
+This project is not in active development.
+I started it to learn goland and because I couldn't find any terminal file manager that suited my needs.
+I don't plan on using a terminal file manager anymore, the tmux + command line combo is enough for me.
+
 # ATFM
 ATFM (Another Terminal File Manager) is a fully featured and vim inspired terminal file manager, written in go, and packed in a single
 executable with no dependencies needed.
